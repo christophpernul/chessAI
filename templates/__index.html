@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>A game of chess</title>
+  <meta name="description" content="A game of chess">
+  <meta name="author" content="Christoph Pernul">
+
+<!--  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">-->
+  <link rel="stylesheet" type="text/css" href="../static/style.css">
+
+</head>
+<body>
+	{% macro create_field(boxtype, name, boolean) -%}
+	{% if boolean == 1 %}
+	    <div class="{{ boxtype }}"><img class="center" src="../static/image/{{ name }}"/></img></div>
+	{% else %}
+	    <div class="{{ boxtype }}"></div>
+	{% endif %}
+	{%- endmacro %}
+
+
+	<div class="container">
+	<!-- Top row -->
+	      <div class="white-box borderbottom"></div>
+	      <div class="white-box borderbottom">a</div>
+	      <div class="white-box borderbottom">b</div>
+	      <div class="white-box borderbottom">c</div>
+	      <div class="white-box borderbottom">d</div>
+	      <div class="white-box borderbottom">e</div>
+	      <div class="white-box borderbottom">f</div>
+	      <div class="white-box borderbottom">g</div>
+	      <div class="white-box borderbottom">h</div>
+	      <div class="white-box borderbottom"></div>
+	<!-- Eight row -->
+	{% for key, value in pieces.iteritems %}
+	{% if value["pos"] is divisibleby(2) %}
+		{{ create_field("box", value["name"], value["boolean"]) }}
+	{% else %}
+		{{ create_field("white-box", value["name"], value["boolean"]) }}
+	{% endif %}
+	      <div class="white-box borderright">8</div>
+
+	      <div class="white-box borderleft">8</div>
+
+	{% endfor %}
+	<!-- Bottom row -->
+	      <div class="white-box bordertop"></div>
+	      <div class="white-box bordertop">a</div>
+	      <div class="white-box bordertop">b</div>
+	      <div class="white-box bordertop">c</div>
+	      <div class="white-box bordertop">d</div>
+	      <div class="white-box bordertop">e</div>
+	      <div class="white-box bordertop">f</div>
+	      <div class="white-box bordertop">g</div>
+	      <div class="white-box bordertop">h</div>
+	      <div class="white-box bordertop"></div>
+	</div>
+
+</body>
+</html>

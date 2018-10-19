@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>A game of chess</title>
+  <meta name="description" content="A game of chess">
+  <meta name="author" content="Christoph Pernul">
+
+<!--  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">-->
+  <link rel="stylesheet" type="text/css" href="../static/style.css">
+
+</head>
+<body>
+	<!--<div class="center">
+	    Press F5 for new game.  Click on any field to start.
+	</div>-->
+
+
+	<div class="container">
+	<!-- Top row -->
+	      <div class="white-box borderbottom"></div>
+	      <div class="white-box borderbottom">a</div>
+	      <div class="white-box borderbottom">b</div>
+	      <div class="white-box borderbottom">c</div>
+	      <div class="white-box borderbottom">d</div>
+	      <div class="white-box borderbottom">e</div>
+	      <div class="white-box borderbottom">f</div>
+	      <div class="white-box borderbottom">g</div>
+	      <div class="white-box borderbottom">h</div>
+	      <div class="white-box borderbottom"></div>
+	<!-- Eight row -->
+	      <div class="white-box borderright">8</div>
+	{% for key in pieces %}
+	{% if "a8" not in key %}
+	{% set var = key["a8"] %}
+	{% endif %}
+	{% endfor %}
+{% if var is defined %}
+		<div class="white-box a8">{{ var }}</div>
+	{% else %}
+		<div class="white-box a8"></div>
+	{% endif %}
+	      <div class="box b8"></div>
+	      <div class="white-box c8"></div>
+	      <div class="box d8"></div>
+	      <div class="white-box e8"></div>
+	      <div class="box f8"></div>
+	      <div class="white-box g8"></div>
+	      <div class="box h8"></div>
+	      <div class="white-box borderleft">8</div>
+	<!-- Seventh row -->
+	      <div class="white-box borderright">7</div>
+	      <div class="box a7"></div>
+	      <div class="white-box b7"></div>
+	      <div class="box c7"></div>
+	      <div class="white-box d7"></div>
+	      <div class="box e7"></div>
+	      <div class="white-box f7"></div>
+	      <div class="box g7"></div>
+	      <div class="white-box h7"></div>
+	      <div class="white-box borderleft">7</div>
+	<!-- Sixth row -->
+	      <div class="white-box borderright">6</div>
+	      <div class="white-box a6"></div>
+	      <div class="box b6"></div>
+	      <div class="white-box c6"></div>
+	      <div class="box d6"></div>
+	      <div class="white-box e6"></div>
+	      <div class="box f6"></div>
+	      <div class="white-box g6"></div>
+	      <div class="box h6"></div>
+	      <div class="white-box borderleft">6</div>
+	<!-- Fifth row -->
+	      <div class="white-box borderright">5</div>
+	      <div class="box a5"></div>
+	      <div class="white-box b5"></div>
+	      <div class="box c5"></div>
+	      <div class="white-box d5"></div>
+	      <div class="box e5"></div>
+	      <div class="white-box f5"></div>
+	      <div class="box g5"></div>
+	      <div class="white-box h5"></div>
+	      <div class="white-box borderleft">5</div>
+	<!-- Fourth row -->
+	      <div class="white-box borderright">4</div>
+	      <div class="white-box a4"></div>
+	      <div class="box b4"></div>
+	      <div class="white-box c4"></div>
+	      <div class="box d4"></div>
+	      <div class="white-box e4"></div>
+	      <div class="box f4"></div>
+	      <div class="white-box g4"></div>
+	      <div class="box h4"></div>
+	      <div class="white-box borderleft">4</div>
+	<!-- Third row -->
+	      <div class="white-box borderright">3</div>
+	      <div class="box a3"></div>
+	      <div class="white-box b3"></div>
+	      <div class="box c3"></div>
+	      <div class="white-box d3"></div>
+	      <div class="box e3"></div>
+	      <div class="white-box f3"></div>
+	      <div class="box g3"></div>
+	      <div class="white-box h3"></div>
+	      <div class="white-box borderleft">3</div>
+	<!-- Second row -->
+	      <div class="white-box borderright">2</div>
+	      <div class="white-box a2"></div>
+	      <div class="box b2"></div>
+	      <div class="white-box c2"></div>
+	      <div class="box d2"></div>
+	      <div class="white-box e2"></div>
+	      <div class="box f2"></div>
+	      <div class="white-box g2"></div>
+	      <div class="box h2"></div>
+	      <div class="white-box borderleft">2</div>
+	<!-- First row -->
+	      <div class="white-box borderright">1</div>
+	      <div class="box a1"></div>
+	      <div class="white-box b1"></div>
+	      <div class="box c1"></div>
+	      <div class="white-box d1"></div>
+	      <div class="box e1"></div>
+	      <div class="white-box f1"></div>
+	      <div class="box g1"></div>
+	      <div class="white-box h1"></div>
+	      <div class="white-box borderleft">1</div>
+	<!-- Bottom row -->
+	      <div class="white-box bordertop"></div>
+	      <div class="white-box bordertop">a</div>
+	      <div class="white-box bordertop">b</div>
+	      <div class="white-box bordertop">c</div>
+	      <div class="white-box bordertop">d</div>
+	      <div class="white-box bordertop">e</div>
+	      <div class="white-box bordertop">f</div>
+	      <div class="white-box bordertop">g</div>
+	      <div class="white-box bordertop">h</div>
+	      <div class="white-box bordertop"></div>
+	</div>
+
+</body>
+</html>

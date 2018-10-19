@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>A game of chess</title>
+  <meta name="description" content="A game of chess">
+  <meta name="author" content="Christoph Pernul">
+
+<!--  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">-->
+  <link rel="stylesheet" type="text/css" href="../static/style.css">
+
+</head>
+<body>
+<p> HEllo World!</p>
+	{% for key, value in field.items() %}
+		{% if key=="left" %}
+				<p>weiß</p>
+		{% endif %}
+
+		{% if value[0] is none %}
+			<p> empty field</p>
+		{% elif value[2] is not none %}
+			<p>{{ key }}</p>
+			<p>{{ value[0] }} {{ value[1] }} {{ value[2] }}</p>
+		{% endif %}
+
+		{% if key=="right" %}
+				<p>weiß</p>
+		{% endif %}
+	{% endfor %}
+
+
+
+</body>
+</html>
