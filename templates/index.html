@@ -14,7 +14,7 @@
 <body>
 	<div class="container">
 	<!-- Top row -->
-	      <div class="white-box borderbottom"></div>
+	   <!--   <div class="white-box borderbottom"></div>
 	      <div class="white-box borderbottom">a</div>
 	      <div class="white-box borderbottom">b</div>
 	      <div class="white-box borderbottom">c</div>
@@ -23,8 +23,11 @@
 	      <div class="white-box borderbottom">f</div>
 	      <div class="white-box borderbottom">g</div>
 	      <div class="white-box borderbottom">h</div>
-	      <div class="white-box borderbottom"></div>
+	      <div class="white-box borderbottom"></div>-->
 		{% for key, value in field.items() %}
+			{% if key[:-1]=="top" %}
+					<div class="white-box borderbottom">{{ value[0] }}</div>
+			{% endif %}
 			{% if key[:-1]=="left" %}
 					<div class="white-box borderright">{{ value[0] }}</div>
 			{% endif %}
@@ -36,11 +39,14 @@
 			{% if key[:-1]=="right" %}
 				<div class="white-box borderleft">{{ value[0] }}</div>
 			{% endif %}
+			{% if key[:-1]=="bottom" %}
+					<div class="white-box bordertop">{{ value[0] }}</div>
+			{% endif %}
 		{% endfor %}
 
 
 	<!-- Bottom row -->
-	      <div class="white-box bordertop"></div>
+	<!--      <div class="white-box bordertop"></div>
 	      <div class="white-box bordertop">a</div>
 	      <div class="white-box bordertop">b</div>
 	      <div class="white-box bordertop">c</div>
@@ -49,7 +55,7 @@
 	      <div class="white-box bordertop">f</div>
 	      <div class="white-box bordertop">g</div>
 	      <div class="white-box bordertop">h</div>
-	      <div class="white-box bordertop"></div>
+	      <div class="white-box bordertop"></div>-->
 	</div>
 
 </body>

@@ -13,12 +13,15 @@ images = dict({'whitePawn':'Chess_plt60.png', 'whiteKnight':'Chess_nlt60.png', '
                 'blackPawn':'Chess_pdt60.png', 'blackKnight':'Chess_ndt60.png', 'blackBishop':'Chess_bdt60.png', \
                'blackRook': 'Chess_rdt60.png', 'blackQueen':'Chess_qdt60.png', 'blackKing':'Chess_kdt60.png'})
 
-def map_array2pieces(array):
+def map_array2fieldconfig(array):
     """ A function mapping the 8x8 board (array: None value means no piece) to a dictionary used for the template
          Dictionary: {key: [imagename, css_class, row_number]} with additional rows 0 and 9, which display the row number"""
     field = dict()
+    ### top row
+    for i, let in enumerate(['', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', '']):
+        field['top'+str(i)] = [let, None, None]
     for i in range(8):
-        ### create entry for 0th row displaying only the row number
+        ### create entry for 0th column displaying only the row number
         field['left'+str(i)] = [str(8 - i), None, None]
         for j, let in enumerate(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']):
             ### get color of pieces
@@ -37,9 +40,29 @@ def map_array2pieces(array):
                 field[let + str(8 - i)] = [images[key], css_class, str(8 - i)]
             else:
                 field[let + str(8 - i)] = [None, css_class, str(8 - i)]
-        ### create entry for 9th row displaying only the row number
+        ### create entry for 9th column displaying only the row number
         field['right'+str(i)] = [str(8 - i), None, None]
+    ### bottom row
+    for i, let in enumerate(['', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', '']):
+        field['bottom'+str(i)] = [let, None, None]
     return field
+
+def invert_fieldconfig(field):
+    newfield = dict()
+    keys = list(field.keys())[::-1]
+    for key in keys:
+        if key=="right":
+            newkey = "left"
+        elif key=="left":
+            newkey = "right"
+        elif key=="top":
+            newkey="bottom"
+        elif key=="bottom":
+            newkey="top"
+        else:
+            newkey = key
+        newfield[newkey] = field[key]
+    return newfield
 
 def map_pieces2array():
     return images
@@ -47,6 +70,7 @@ def map_pieces2array():
 class ChessGame:
     def __init__(self):
         self.moves = []
+        self.white2move = True
         self.num_moves = 0
         self.num_same_moves = 0
         ### list of every field on the board: Boolean variable decides whether there is a piece on the given field
@@ -60,8 +84,13 @@ class ChessGame:
                            'Pawn6': 'f7', 'Pawn7': 'g7', 'Pawn8': 'h7', 'Rook1': 'a8', 'Rook2': 'h8', \
                            'Knight1': 'b8', 'Knight2': 'g8', 'Bishop1': 'c8', 'Bishop2': 'f8', \
                            'Queen': 'd8', 'King': 'e8'})
-        self.field_info = dict()
+        self.field_info = dict() ## stores field config for white to move
+        self.inverse_field_info = dict() ## stores field config for black to move
+        ## field to use in the template whether black or white has to move
+        self.field = dict()
 
+    def switch_field(self):
+        self.field = self.field_info if self.white2move == True else self.inverse_field_info
 
     def set_initial_pieces(self):
         """Places all figures on the board
@@ -85,8 +114,18 @@ class ChessGame:
             self.board[i][3] = '{0}Queen'.format(color)
             self.board[i][4] = '{0}King'.format(color)
         ### create dict used for the template
-        self.field_info = map_array2pieces(self.board)
+        self.field_info = map_array2fieldconfig(self.board)
+        self.inverse_field_info = invert_fieldconfig(self.field_info)
+        self.switch_field()
 
+
+    def human_move(self):
+        """Human does a move"""
+        return 1
+
+    def ai_move(self):
+        """AI does a move"""
+        return 1
 
     def check_game_status():
         """Checks game status, whether win/loss/remis
@@ -97,6 +136,8 @@ class ChessGame:
         """Reads input using a mouse click or chess notation
         """
         return 1
+    def test(self):
+        self.field['a8'][1] = "box"
 
 
 
