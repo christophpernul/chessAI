@@ -9,21 +9,33 @@ Line 2 needed to run flask with python3
 """
 ### import own module named game
 import importlib
-gf = importlib.import_module('game') 
+gf = importlib.import_module('game')
+
+import json
 
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, send_from_directory, jsonify
 app = Flask(__name__)
 
-@app.route('/', methods=["GET", "POST"])
+game = gf.ChessGame()
+a = game.set_initial_pieces()
+
+@app.route('/')
 def index():
-    game = gf.ChessGame()
-    a = game.set_initial_pieces()
     field = game.field
     # if request.method=="GET":
        # game.test()
     return render_template("index.html", field=field)
-    #return render_template("testFlask_index.html", field=field)
+    # return render_template("testFlask_index.html", field=field)
 
+@app.route('/receiver', methods = ['POST', 'GET'])
+def receiver():
+    if request.method=="POST":
+        # data = json.loads(request.data)
+        data = request.get_json(force=True)
+        # print(data)
+        game.human_move(data)
+        field = game.field
+    return render_template("index.html", field=field)
 
 
 

@@ -8,7 +8,9 @@
   <meta name="author" content="Christoph Pernul">
 
 <!--  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">-->
-  <link rel="stylesheet" type="text/css" href="../static/style.css">
+  <link rel="stylesheet" type="text/css" href="../static/css/style.css">
+  <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script src="../static/moves.js"></script>
 
 </head>
 <body>
@@ -32,9 +34,9 @@
 					<div class="white-box borderright">{{ value[0] }}</div>
 			{% endif %}
 			{% if value[0] is none %}
-				<div class="{{ value[1] }}"></div>
+				<div class="board {{ value[1] }}" id="{{ key }}"></div>
 			{% elif value[2] is not none %}
-				<div class="{{ value[1] }}"><img class="center" src="../static/image/{{ value[0] }}"/></img></div>
+				<div class="board {{ value[1] }}" id="{{ key }}"><img class="center" src="../static/image/{{ value[0] }}"/></img></div>
 			{% endif %}
 			{% if key[:-1]=="right" %}
 				<div class="white-box borderleft">{{ value[0] }}</div>

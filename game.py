@@ -13,6 +13,11 @@ images = dict({'whitePawn':'Chess_plt60.png', 'whiteKnight':'Chess_nlt60.png', '
                 'blackPawn':'Chess_pdt60.png', 'blackKnight':'Chess_ndt60.png', 'blackBishop':'Chess_bdt60.png', \
                'blackRook': 'Chess_rdt60.png', 'blackQueen':'Chess_qdt60.png', 'blackKing':'Chess_kdt60.png'})
 
+def chess2computer(string):
+    letter = string[0]
+    number = string[1]
+    return [8-int(number), ord(letter)-97]
+
 def map_array2fieldconfig(array):
     """ A function mapping the 8x8 board (array: None value means no piece) to a dictionary used for the template
          Dictionary: {key: [imagename, css_class, row_number]} with additional rows 0 and 9, which display the row number"""
@@ -37,7 +42,7 @@ def map_array2fieldconfig(array):
             ### entries for a field on the board
             if array[i][j]!=None:
                 key = color+re.sub('[0-9]', '', str(array[i][j]))[1:]
-                field[let + str(8 - i)] = [images[key], css_class, str(8 - i)]
+                field[let + str(8 - i) +str(" ")+str(array[i][j])] = [images[key], css_class, str(8 - i)]
             else:
                 field[let + str(8 - i)] = [None, css_class, str(8 - i)]
         ### create entry for 9th column displaying only the row number
@@ -88,6 +93,9 @@ class ChessGame:
         self.inverse_field_info = dict() ## stores field config for black to move
         ## field to use in the template whether black or white has to move
         self.field = dict()
+        self.choose_piece = False
+        self.choose_piece_position = ''
+
 
     def switch_field(self):
         self.field = self.field_info if self.white2move == True else self.inverse_field_info
@@ -119,9 +127,42 @@ class ChessGame:
         self.switch_field()
 
 
-    def human_move(self):
+    def human_move(self, string):
         """Human does a move"""
-        return 1
+        if len(string)>2:
+            ### there is a piece on the selected field
+            print("Piece selected")
+            self.choose_piece = True
+            self.choose_piece_position = string[:2]
+            pos = chess2computer(self.choose_piece_position)
+            # print(string[:2])
+            # print(pos)
+            if string[3:]!=self.board[pos[0]][pos[1]]:
+                print("Implementation ERROR: not correct piece selected!")
+            if (self.white2move==True and string[3]!='w') or (self.white2move==False and string[3]!='b'):
+                print("Wrong piece selected!")
+                # print(pos[0], pos[1]);
+        else:
+            print("No Piece selected")
+            ### there is no piece on the selected field
+            if self.choose_piece==True:
+                print("Adjust board")
+                # print("Position der Figur:", self.choose_piece_position)
+                # print("Position des Ziels:", string)
+                oldpos = chess2computer(self.choose_piece_position)
+                newpos = chess2computer(string)
+                ### save piece on old field
+                piece = self.board[oldpos[0]][oldpos[1]]
+                ### set piece to new field
+                self.board[newpos[0]][newpos[1]] = piece
+                ### remove piece from old field
+                self.board[oldpos[0]][oldpos[1]] = None
+                ### adjust board layout
+                self.field_info = map_array2fieldconfig(self.board)
+                self.inverse_field_info = invert_fieldconfig(self.field_info)
+                print(self.board)
+                self.switch_field()
+
 
     def ai_move(self):
         """AI does a move"""

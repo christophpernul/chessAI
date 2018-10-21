@@ -8,11 +8,14 @@
   <meta name="author" content="Christoph Pernul">
 
 <!--  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">-->
-  <link rel="stylesheet" type="text/css" href="../static/style.css">
+  <link rel="stylesheet" type="text/css" href="../static/css/style.css">
+  <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script src="../static/moves.js"></script>
 
 </head>
 <body>
 <p> HEllo World!</p>
+	{# this is used to test the implementation of the board
 	{% for key, value in field.items() %}
 		{% if key=="left" %}
 				<p>weiß</p>
@@ -28,7 +31,13 @@
 		{% if key=="right" %}
 				<p>weiß</p>
 		{% endif %}
-	{% endfor %}
+	{% endfor %} #}
+
+	{# this is used to test the implementation of a clickable element #}
+	<div class="container">
+		<div id="a8" class="board white-box"></div>
+		<div id="b8" class="board box"></div>
+	</div>
 
 
 
