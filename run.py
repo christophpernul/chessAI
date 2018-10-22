@@ -20,20 +20,23 @@ game = gf.ChessGame()
 a = game.set_initial_pieces()
 
 @app.route('/')
+@app.route('/index')
 def index():
     field = game.field
-    # if request.method=="GET":
-       # game.test()
     return render_template("index.html", field=field)
     # return render_template("testFlask_index.html", field=field)
 
-@app.route('/receiver', methods = ['POST', 'GET'])
-def receiver():
+@app.route('/move', methods = ['POST', 'GET'])
+def move():
     if request.method=="POST":
-        # data = json.loads(request.data)
         data = request.get_json(force=True)
-        # print(data)
         game.human_move(data)
+        field = game.field
+        if game.choose_piece == True:
+            return redirect(url_for('index'))
+        else:
+            return redirect(url_for('move'))
+    else:
         field = game.field
     return render_template("index.html", field=field)
 

@@ -131,7 +131,7 @@ class ChessGame:
         """Human does a move"""
         if len(string)>2:
             ### there is a piece on the selected field
-            print("Piece selected")
+            # print("Piece selected")
             self.choose_piece = True
             self.choose_piece_position = string[:2]
             pos = chess2computer(self.choose_piece_position)
@@ -143,10 +143,10 @@ class ChessGame:
                 print("Wrong piece selected!")
                 # print(pos[0], pos[1]);
         else:
-            print("No Piece selected")
+            # print("No Piece selected")
             ### there is no piece on the selected field
             if self.choose_piece==True:
-                print("Adjust board")
+                # print("Adjust board")
                 # print("Position der Figur:", self.choose_piece_position)
                 # print("Position des Ziels:", string)
                 oldpos = chess2computer(self.choose_piece_position)
@@ -160,8 +160,9 @@ class ChessGame:
                 ### adjust board layout
                 self.field_info = map_array2fieldconfig(self.board)
                 self.inverse_field_info = invert_fieldconfig(self.field_info)
-                print(self.board)
+                # print(self.board)
                 self.switch_field()
+                self.choose_piece = False
 
 
     def ai_move(self):
