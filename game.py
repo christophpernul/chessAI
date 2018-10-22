@@ -95,6 +95,11 @@ class ChessGame:
         self.field = dict()
         self.choose_piece = False
         self.choose_piece_position = ''
+        self.piece_type = ''
+        ### First item checks if en passant move is possible (when the previous move was a double move)
+        ### Second item checks whether a piece, which was captured en passant, has to be removed
+        self.en_passant_possible = [False, False]
+        self.capture = False
 
 
     def switch_field(self):
@@ -131,38 +136,182 @@ class ChessGame:
         """Human does a move"""
         if len(string)>2:
             ### there is a piece on the selected field
-            # print("Piece selected")
-            self.choose_piece = True
-            self.choose_piece_position = string[:2]
-            pos = chess2computer(self.choose_piece_position)
-            # print(string[:2])
-            # print(pos)
-            if string[3:]!=self.board[pos[0]][pos[1]]:
-                print("Implementation ERROR: not correct piece selected!")
-            if (self.white2move==True and string[3]!='w') or (self.white2move==False and string[3]!='b'):
-                print("Wrong piece selected!")
-                # print(pos[0], pos[1]);
+            piecepos = string[:2]
+            piecetype = string[3:]
+            if self.choose_piece == True:
+                if (self.white2move==True and piecetype[0]!='w') or (self.white2move==False and piecetype[0]!='b'):
+                    self.make_move(string)
+                else:
+                    print("Wrong piece selected - you cannot move onto your own piece!")
+                    self.choose_piece = False
+                    self.choose_piece_position = ''
+                    self.piece_type = ''
+
+            elif self.choose_piece == False:
+                self.choose_piece_position = string[:2]
+                self.piece_type = string[3:]
+                pos = chess2computer(self.choose_piece_position)
+                if (self.white2move == True and self.piece_type[0] != 'w') or (self.white2move == False and self.piece_type[0] != 'b'):
+                    print("Wrong piece selected!")
+                    self.choose_piece = False
+                    self.choose_piece_position = ''
+                    self.piece_type = ''
+                else:
+                    self.choose_piece = True
         else:
+            if self.choose_piece == True:
+                self.make_move(string)
+            else:
+                print("You have to choose a piece first")
+
+
+    def make_move(self, string):
             # print("No Piece selected")
             ### there is no piece on the selected field
-            if self.choose_piece==True:
+            # if self.choose_piece==True:
                 # print("Adjust board")
                 # print("Position der Figur:", self.choose_piece_position)
                 # print("Position des Ziels:", string)
-                oldpos = chess2computer(self.choose_piece_position)
-                newpos = chess2computer(string)
-                ### save piece on old field
-                piece = self.board[oldpos[0]][oldpos[1]]
-                ### set piece to new field
-                self.board[newpos[0]][newpos[1]] = piece
-                ### remove piece from old field
-                self.board[oldpos[0]][oldpos[1]] = None
-                ### adjust board layout
-                self.field_info = map_array2fieldconfig(self.board)
-                self.inverse_field_info = invert_fieldconfig(self.field_info)
-                # print(self.board)
-                self.switch_field()
-                self.choose_piece = False
+        oldpos = chess2computer(self.choose_piece_position)
+        newpos = chess2computer(string)
+        ### save piece on old field
+        piece = self.board[oldpos[0]][oldpos[1]]
+        if self.check_if_valid_move(string)==True:
+            print("Move was valid")
+            ### set piece to new field
+            self.board[newpos[0]][newpos[1]] = piece
+            ### remove piece from old field
+            self.board[oldpos[0]][oldpos[1]] = None
+            if self.en_passant_possible[1]==True:
+                ### remove piece, which was captured en passant, too
+                if piece[0]=='w':
+                    self.board[3][newpos[1]] = None
+                elif piece[0] == 'b':
+                    self.board[4][newpos[1]] = None
+                self.en_passant_possible = [False, False]
+            ### adjust board layout
+            self.field_info = map_array2fieldconfig(self.board)
+            self.inverse_field_info = invert_fieldconfig(self.field_info)
+            ### No piece selected after move
+            self.choose_piece = False
+            self.choose_piece_position = ''
+            self.piece_type = ''
+            self.white2move = True if self.white2move == False else False
+            self.switch_field()
+        else:
+            self.choose_piece = False
+            self.choose_piece_position = ''
+            self.piece_type = ''
+
+
+    def check_if_valid_move(self, string):
+        oldpos = chess2computer(self.choose_piece_position)
+        newpos = chess2computer(string)
+        piece_on_newpos = self.board[newpos[0]][newpos[1]]
+        ### Rules for pawns
+        if 'Pawn' in self.piece_type:
+            # print("It is a pawn")
+            if abs(newpos[1]-oldpos[1])>1:
+                ### not more than 1 field to the side possible
+                # print("seitlich 2")
+                return False
+            if abs(newpos[1]-oldpos[1])==1:
+                # print("seitlich 1")
+                if piece_on_newpos == None:
+                    # print("Feld leer")
+                    ### empty field on the side
+                    if self.piece_type[0]=='w':
+                        # print("weiß")
+                        # print(piece_on_newpos, self.board[3][newpos[1]], self.en_passant_possible[0])
+                        if newpos[0]==2 and piece_on_newpos==None and \
+                                'bPawn' in self.board[3][newpos[1]] and self.en_passant_possible[0] == True:
+                            # print("en passant")
+                            ### en passante capture by white: correct row with empty target field and
+                            ### piece to capture has to be a pawn, which moved in the last move
+                            self.capture = True
+                            self.en_passant_possible = [False, True]
+                            return True
+                        else:
+                            # print("kein en passante")
+                            return False
+                    elif self.piece_type[0]=='b':
+                        # print("black")
+                        # print(piece_on_newpos, self.board[3][newpos[1]], self.en_passant_possible[0])
+                        if newpos[0]==5 and piece_on_newpos==None and \
+                                'wPawn' in self.board[4][newpos[1]] and self.en_passant_possible[0] == True:
+                            # print("en passante")
+                            ### en passante capture by black: correct row with empty target field and
+                            ### piece to capture has to be a pawn, which moved in the last move
+                            self.en_passant_possible = [False, True]
+                            self.capture = True
+                            return True
+                        else:
+                            # print("kein en passante")
+                            return False
+                elif piece_on_newpos[0]==self.piece_type[0]:
+                    ### capture of piece with same color not possible
+                    # print("Feld durch gleiche Farbe belegt")
+                    return False
+                elif piece_on_newpos[0]!=self.piece_type[0]:
+                    if self.piece_type[0]=='w':
+                        if newpos[0]<oldpos[0]:
+                            ## capture is only possible in forward direction
+                            self.capture = True
+                            self.en_passant_possible = [False, False]
+                            # print("Schlagen!!")
+                            return True
+                        else:
+                            # print("Schlagen nur in Vorwärtsrichtung!!")
+                            return False
+                    elif self.piece_type[0]=='b':
+                        if newpos[0]>oldpos[0]:
+                            ## capture is only possible in forward direction
+                            self.capture = True
+                            self.en_passant_possible = [False, False]
+                            # print("Schlagen!!")
+                            return True
+                        else:
+                            # print("Schlagen nur in Vorwärtsrichtung!!")
+                            return False
+
+            else:
+                if self.piece_type[0]=='w':
+                    # print("weiß")
+                    if oldpos[0]-newpos[0]==2:
+                        # print("Doppelzug")
+                        if oldpos[0]==6:
+                            # print("ok")
+                            ### double move by white
+                            self.en_passant_possible = [True, False]
+                            return True
+                        else:
+                            # print("no")
+                            return False
+                    elif (oldpos[0]-newpos[0]==1) and piece_on_newpos==None:
+                        self.en_passant_possible = [False, False]
+                        return True
+                    else:
+                        # print("zu weit")
+                        return False
+                if self.piece_type[0]=='b':
+                    # print("black")
+                    if newpos[0]-oldpos[0]==2:
+                        # print("Doppelzug")
+                        if oldpos[0]==1:
+                            self.en_passant_possible = [True, False]
+                            # print("ok")
+                            ### double move by white
+                            return True
+                        else:
+                            # print("no")
+                            return False
+                    elif (newpos[0]-oldpos[0]==1) and piece_on_newpos==None:
+                        # print("EInzelzug")
+                        self.en_passant_possible = [False, False]
+                        return True
+                    else:
+                        # print("zu weit")
+                        return False
 
 
     def ai_move(self):
