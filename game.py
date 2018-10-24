@@ -69,9 +69,6 @@ def invert_fieldconfig(field):
         newfield[newkey] = field[key]
     return newfield
 
-def map_pieces2array():
-    return images
-
 class ChessGame:
     def __init__(self):
         self.moves = []
@@ -163,6 +160,7 @@ class ChessGame:
                 self.make_move(string)
             else:
                 print("You have to choose a piece first")
+        self.check_game_status()
 
 
     def make_move(self, string):
@@ -177,16 +175,30 @@ class ChessGame:
         ### save piece on old field
         piece = self.board[oldpos[0]][oldpos[1]]
         if self.check_if_valid_move(string)==True:
-            print("Move was valid")
-            ### set piece to new field
-            self.board[newpos[0]][newpos[1]] = piece
+            # print("Move was valid")
+            if self.board[newpos[0]][newpos[1]] == None:
+                ### set piece to new field
+                self.board[newpos[0]][newpos[1]] = piece
+            else:
+                if self.piece_type[0] == 'w':
+                    captured_piece = self.board[newpos[0]][newpos[1]][1:]
+                    del self.black[captured_piece]
+                elif self.piece_type[0] == 'b':
+                    captured_piece = self.board[newpos[0]][newpos[1]][1:]
+                    del self.white[captured_piece]
+                self.board[newpos[0]][newpos[1]] = piece
+
             ### remove piece from old field
             self.board[oldpos[0]][oldpos[1]] = None
             if self.en_passant_possible[1]==True:
                 ### remove piece, which was captured en passant, too
                 if piece[0]=='w':
+                    captured_piece = self.board[3][newpos[1]][1:]
+                    del self.black[captured_piece]
                     self.board[3][newpos[1]] = None
                 elif piece[0] == 'b':
+                    captured_piece = self.board[4][newpos[1]][1:]
+                    del self.white[captured_piece]
                     self.board[4][newpos[1]] = None
                 self.en_passant_possible = [False, False]
             ### adjust board layout
@@ -208,8 +220,58 @@ class ChessGame:
         oldpos = chess2computer(self.choose_piece_position)
         newpos = chess2computer(string)
         piece_on_newpos = self.board[newpos[0]][newpos[1]]
+        ### Rules for Kings
+        if 'King' in self.piece_type:
+            if abs(newpos[1] - oldpos[1]) > 1 or abs(newpos[0] - oldpos[0]) > 1:
+                return False
+            else:
+                if piece_on_newpos == None:
+                    return True
+                else:
+                    if self.piece_type[0] == piece_on_newpos[0]:
+                        return False
+                    else:
+                        self.capture = True
+                        return True
+        ### Rules for Queens
+        elif 'Queen' in self.piece_type:
+            if abs(newpos[0]-oldpos[0]) == abs(newpos[1]-oldpos[1]):
+                ### moving diagonal
+                return self.check_diagonal(oldpos, newpos)
+            else:
+                return self.check_straight(oldpos, newpos)
+
+        elif 'Rook' in self.piece_type:
+            return self.check_straight(oldpos, newpos)
+
+        elif 'Bishop' in self.piece_type:
+            if abs(newpos[0] - oldpos[0]) == abs(newpos[1] - oldpos[1]):
+                return self.check_diagonal(oldpos, newpos)
+            else:
+                return False
+        elif 'Knight' in self.piece_type:
+            moves = [[-2, -1], [-2, +1], [+2, -1], [+2, +1], [+1, +2], [-1, +2], [+1, -2], [-1, -2]]
+            for x in moves:
+                if (np.array(newpos) == (np.array(oldpos) + np.array(x))).all():
+                    if self.board[newpos[0]][newpos[1]] != None:
+                        if self.board[newpos[0]][newpos[1]][0] != self.piece_type[0]:
+                            self.capture = True
+                            return True
+                        # else:
+                            # continue
+                    else:
+                        return True
+                else:
+                    continue
+            return False
+
         ### Rules for pawns
-        if 'Pawn' in self.piece_type:
+        elif 'Pawn' in self.piece_type:
+            ### check whether a pawn is on the last row -> promotion to a Q,K,B,R possible
+            if newpos[0]==0 :
+                print("Promotion for white")
+            elif newpos[0]==7:
+                print("Promotion for black")
             # print("It is a pawn")
             if abs(newpos[1]-oldpos[1])>1:
                 ### not more than 1 field to the side possible
@@ -313,15 +375,126 @@ class ChessGame:
                         # print("zu weit")
                         return False
 
+    def check_if_piece_on_1darray(self, array, start, end):
+        """checks whether a move is valid if performed along the array direction
+        in array is important: index(oldposition) < index(newposition) """
+        for i in range(start, end + 1):
+            if i == end:
+                if array[i] == None:
+                    return True
+                else:
+                    # print("end position is")
+                    if array[i][0] != self.piece_type[0]:
+                        # print("other color")
+                        self.capture = True
+                        return True
+                    else:
+                        return False
+            else:
+                # print("between")
+                if array[i] == None:
+                    continue
+                else:
+                    # print("is a piece")
+                    return False
+
+    def check_straight(self, oldpos, newpos):
+        ### checks if a straight move along a row or column is valid
+        if newpos[0] == oldpos[0]:
+            # print("same row")
+            ### moving in the same row
+            checkpath_row = self.board[newpos[0]]
+            if oldpos[1] < newpos[1]:
+                start = oldpos[1] + 1
+                end = newpos[1]
+            else:
+                start = 7 - (oldpos[1] - 1)
+                end = 7 - newpos[1]
+                checkpath_row = checkpath_row[::-1]
+            return self.check_if_piece_on_1darray(checkpath_row, start, end)
+
+        elif newpos[1] == oldpos[1]:
+            # print("same col")
+            ### moving in the same column
+            checkpath_col = self.board[:,newpos[1]]
+            if oldpos[0] < newpos[0]:
+                start = oldpos[0] + 1
+                end = newpos[0]
+            else:
+                start = 7 - (oldpos[0] - 1)
+                end = 7 - newpos[0]
+                checkpath_col = checkpath_col[::-1]
+            return self.check_if_piece_on_1darray(checkpath_col, start, end)
+
+    def check_diagonal(self, oldpos, newpos):
+        ### checks whether a move along a diagonal is valid
+        fliparray = np.fliplr(self.board)
+        idx = np.array(['{0}{1}'.format(i, j) for i in range(8) for j in range(8)]).reshape((8, 8))
+        diag = np.diagonal(idx, oldpos[1] - oldpos[0])
+        flipdiag = np.diagonal(np.fliplr(idx), 7 - (oldpos[0] + oldpos[1]))
+        if (newpos[0] - newpos[1]) == (oldpos[0] - oldpos[1]):
+            ### the old and new positions are along the diagonal (upper left to lower right)
+            # print("normal diag")
+            arr = diag
+            check_diag = np.diagonal(self.board, oldpos[1] - oldpos[0])
+            ### get the correct indices for start- and endfield
+            if oldpos[0] < newpos[0]:
+                startfield = '{0}{1}'.format(oldpos[0] + 1, oldpos[1] + 1)
+                endfield = '{0}{1}'.format(newpos[0], newpos[1])
+            else:
+                startfield = '{0}{1}'.format(oldpos[0] - 1, oldpos[1] - 1)
+                endfield = '{0}{1}'.format(newpos[0], newpos[1])
+                check_diag = check_diag[::-1]
+                arr = arr[::-1]
+
+        else:
+            arr = flipdiag
+            check_diag = np.diagonal(fliparray, 7 - (oldpos[0] + oldpos[1]))
+            # print("flip diag")
+            ### get the correct indices for start- and endfield
+            if oldpos[0] < newpos[0]:
+                startfield = '{0}{1}'.format(oldpos[0] + 1, oldpos[1] - 1)
+                endfield = '{0}{1}'.format(newpos[0], newpos[1])
+            else:
+                startfield = '{0}{1}'.format(oldpos[0] - 1, oldpos[1] + 1)
+                endfield = '{0}{1}'.format(newpos[0], newpos[1])
+                check_diag = check_diag[::-1]
+                arr = arr[::-1]
+        ### convert from indices on the board to indices in the flip/diagonal array
+        start, end = None, None
+        for j in range(len(arr)):
+            if arr[j] == startfield:
+                start = j
+            elif arr[j] == endfield:
+                end = j
+        if startfield == endfield:
+            end = start
+        if start != None and end != None:
+            return self.check_if_piece_on_1darray(check_diag, start, end)
+        else:
+            print("Indices for diagonal not found!")
+
+
+
+
+
+
 
     def ai_move(self):
         """AI does a move"""
         return 1
 
-    def check_game_status():
+    def check_game_status(self):
         """Checks game status, whether win/loss/remis
         """
-        return 1
+        if 'King' not in self.white:
+            print('Black wins')
+            return 1
+        elif 'King' not in self.black:
+            print('White wins')
+            return 1
+        else:
+            return 0
 
     def read_input(self):
         """Reads input using a mouse click or chess notation
