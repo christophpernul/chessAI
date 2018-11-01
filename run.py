@@ -30,6 +30,7 @@ def index():
 def move():
     if request.method=="POST":
         data = request.get_json(force=True)
+        # print(data)
         game.human_move(data)
         field = game.field
         if game.choose_piece == True:

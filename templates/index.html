@@ -14,18 +14,13 @@
 
 </head>
 <body>
+	<div class="pieces-container" id="promotion">
+		<div class="boxes" id="K"><img class="center" src="../static/image/Chess_nlt60.png"/></img></div>
+		<div class="boxes" id="B"><img class="center" src="../static/image/Chess_blt60.png"/></img></div>
+		<div class="boxes" id="R"><img class="center" src="../static/image/Chess_rlt60.png"/></img></div>
+		<div class="boxes" id="Q"><img class="center" src="../static/image/Chess_qlt60.png"/></img></div>
+	</div>
 	<div class="container">
-	<!-- Top row -->
-	   <!--   <div class="white-box borderbottom"></div>
-	      <div class="white-box borderbottom">a</div>
-	      <div class="white-box borderbottom">b</div>
-	      <div class="white-box borderbottom">c</div>
-	      <div class="white-box borderbottom">d</div>
-	      <div class="white-box borderbottom">e</div>
-	      <div class="white-box borderbottom">f</div>
-	      <div class="white-box borderbottom">g</div>
-	      <div class="white-box borderbottom">h</div>
-	      <div class="white-box borderbottom"></div>-->
 		{% for key, value in field.items() %}
 			{% if key[:-1]=="top" %}
 					<div class="white-box borderbottom">{{ value[0] }}</div>
@@ -45,19 +40,6 @@
 					<div class="white-box bordertop">{{ value[0] }}</div>
 			{% endif %}
 		{% endfor %}
-
-
-	<!-- Bottom row -->
-	<!--      <div class="white-box bordertop"></div>
-	      <div class="white-box bordertop">a</div>
-	      <div class="white-box bordertop">b</div>
-	      <div class="white-box bordertop">c</div>
-	      <div class="white-box bordertop">d</div>
-	      <div class="white-box bordertop">e</div>
-	      <div class="white-box bordertop">f</div>
-	      <div class="white-box bordertop">g</div>
-	      <div class="white-box bordertop">h</div>
-	      <div class="white-box bordertop"></div>-->
 	</div>
 
 </body>

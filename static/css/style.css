@@ -14,6 +14,22 @@ body {
   width: 800px;
 }
 
+.pieces-container {
+  display: flex;
+  flex-direction: cols;
+  flex-wrap: wrap;
+  flex-direction: cols;
+  justify-content: center;
+  vertical-align: middle;
+  /*margin: auto;*/
+  height: 80px;
+  width: 320px;
+}
+
+#promotion.display-boxes .boxes {
+display: flex;
+}
+
 .center {
 align-self: center;
 /*width: 60%;
@@ -47,6 +63,17 @@ height: 10%;
 background-color: #4d2600;
 }
 
+.boxes {
+/*max-height: 10%;
+position: relative;*/
+display: none;
+align-items: center;
+justify-content: center;
+flex: 0 0 25%;
+height: 100%;
+background-color: #bf8040;
+}
+
 .bordertop {
 background-color: white;
 }
@@ -59,5 +86,13 @@ background-color: white;
 .borderright {
 background-color: white;
 }
+
+
+
+
+
+
+
+
 
 
