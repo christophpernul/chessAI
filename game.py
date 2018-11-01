@@ -27,12 +27,12 @@ def promotion_fields(array):
         a promotion of a pawn is possible"""
     fields = []
     for j in range(7):
-        if array[1][j] is not None:
+        if array[1][j] != None:
             if 'wPawn' in array[1][j]:
                 fields.append((0,j))
                 fields.append((0, j-1))
                 fields.append((0, j+1))
-        if array[6][j] is not None:
+        if array[6][j] != None:
             if 'bPawn' in array[6][j]:
                 fields.append((7,j))
                 fields.append((7, j-1))
@@ -53,20 +53,20 @@ def map_array2fieldconfig(array):
         field['left'+str(i)] = [str(8 - i), None, None]
         for j, let in enumerate(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']):
             ### get color of pieces
-            if str(array[i][j])[0] is 'w':
+            if str(array[i][j])[0] == 'w':
                 color = 'white'
             else:
                 color = 'black'
             ### get color of field on the board
-            if i%2 is 0:
-                css_class = 'white-box' if j % 2 is 0 else 'box'
+            if i%2 == 0:
+                css_class = 'white-box' if j % 2 == 0 else 'box'
             else:
-                css_class = 'white-box' if j % 2 is 1 else 'box'
+                css_class = 'white-box' if j % 2 == 1 else 'box'
             ### add "promote" to css class, if a pawn is able to promote on that field
             if (i,j) in promote_fields:
                 css_class += ' P'
             ### entries for a field on the board
-            if array[i][j] is not None:
+            if array[i][j] != None:
                 key = color+re.sub('[0-9]', '', str(array[i][j]))[1:]
                 field[let + str(8 - i) +str(" ")+str(array[i][j])] = [images[key], css_class, str(8 - i)]
             else:
@@ -82,13 +82,13 @@ def invert_fieldconfig(field):
     newfield = {}
     keys = list(field.keys())[::-1]
     for key in keys:
-        if key is "right":
+        if key == "right":
             newkey = "left"
-        elif key is "left":
+        elif key == "left":
             newkey = "right"
-        elif key is "top":
+        elif key == "top":
             newkey="bottom"
-        elif key is "bottom":
+        elif key == "bottom":
             newkey="top"
         else:
             newkey = key
@@ -128,7 +128,7 @@ class ChessGame:
 
 
     def switch_field(self):
-        self.field = self.field_info if self.white2move is True else self.inverse_field_info
+        self.field = self.field_info if self.white2move == True else self.inverse_field_info
 
     def set_initial_pieces(self):
         """Places all figures on the board
@@ -159,16 +159,16 @@ class ChessGame:
 
     def human_move(self, string):
         """Human does a move"""
-        promoted_piece = 'w' if self.white2move is True else 'b'
+        promoted_piece = 'w' if self.white2move == True else 'b'
         # print(string)
         if string[0] in ['K', 'B', 'R', 'Q']:
-            if string[0] is 'K':
+            if string[0] == 'K':
                 promoted_piece += 'Knight'
-            elif string[0] is 'B':
-                promoted_piece += 'Bishop'
-            elif string[0] is 'R':
+            elif string[0] == 'B':
+                promoted_piece += 'B==hop'
+            elif string[0] == 'R':
                 promoted_piece += 'Rook'
-            elif string[0] is 'Q':
+            elif string[0] == 'Q':
                 promoted_piece += 'Queen'
             promotion = [True, promoted_piece]
             # print("promotion!!!", promotion)
@@ -179,8 +179,8 @@ class ChessGame:
             ### there is a piece on the selected field
             piecepos = string[:2]
             piecetype = string[3:]
-            if self.choose_piece is True:
-                if (self.white2move is True and piecetype[0] is not 'w') or (self.white2move is False and piecetype[0] is not 'b'):
+            if self.choose_piece == True:
+                if (self.white2move == True and piecetype[0] != 'w') or (self.white2move == False and piecetype[0] != 'b'):
                     self.make_move(string, promotion)
                 else:
                     print("Wrong piece selected - you cannot move onto your own piece!")
@@ -188,11 +188,11 @@ class ChessGame:
                     self.choose_piece_position = ''
                     self.piece_type = ''
 
-            elif self.choose_piece is False:
+            elif self.choose_piece == False:
                 self.choose_piece_position = string[:2]
                 self.piece_type = string[3:]
                 pos = chess2computer(self.choose_piece_position)
-                if (self.white2move is True and self.piece_type[0] is not 'w') or (self.white2move is False and self.piece_type[0] is not 'b'):
+                if (self.white2move == True and self.piece_type[0] != 'w') or (self.white2move == False and self.piece_type[0] != 'b'):
                     print("Wrong piece selected!")
                     self.choose_piece = False
                     self.choose_piece_position = ''
@@ -200,7 +200,7 @@ class ChessGame:
                 else:
                     self.choose_piece = True
         else:
-            if self.choose_piece is True:
+            if self.choose_piece == True:
                 self.make_move(string, promotion)
             else:
                 print("You have to choose a piece first")
@@ -213,22 +213,22 @@ class ChessGame:
         ### save piece on old field
         # print(string, newpos, oldpos)
         piece = self.board[oldpos[0]][oldpos[1]]
-        if self.check_if_valid_move(oldpos, newpos) is True and self.king_in_check(oldpos, newpos) is False:
+        if self.check_if_valid_move(oldpos, newpos) == True and self.king_in_check(oldpos, newpos) == False:
             # print("Move was valid")
-            if self.board[newpos[0]][newpos[1]] is None:
+            if self.board[newpos[0]][newpos[1]] == None:
                 ### set piece to new field
                 self.board[newpos[0]][newpos[1]] = piece
-                if piece[0] is 'w':
+                if piece[0] == 'w':
                     self.white[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
-                elif piece[0] is 'b':
+                elif piece[0] == 'b':
                     self.black[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
 
             else:
-                if self.piece_type[0] is 'w':
+                if self.piece_type[0] == 'w':
                     captured_piece = self.board[newpos[0]][newpos[1]][1:]
                     self.white[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
                     del self.black[captured_piece]
-                elif self.piece_type[0] is 'b':
+                elif self.piece_type[0] == 'b':
                     captured_piece = self.board[newpos[0]][newpos[1]][1:]
                     self.black[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
                     del self.white[captured_piece]
@@ -236,27 +236,27 @@ class ChessGame:
 
             ### remove piece from old field
             self.board[oldpos[0]][oldpos[1]] = None
-            if self.en_passant_possible[1] is True:
+            if self.en_passant_possible[1] == True:
                 ### remove piece, which was captured en passant, too
-                if piece[0] is 'w':
+                if piece[0] == 'w':
                     captured_piece = self.board[3][newpos[1]][1:]
                     del self.black[captured_piece]
                     self.board[3][newpos[1]] = None
-                elif piece[0] is 'b':
+                elif piece[0] == 'b':
                     captured_piece = self.board[4][newpos[1]][1:]
                     del self.white[captured_piece]
                     self.board[4][newpos[1]] = None
                 self.en_passant_possible = [False, False]
             ### promote a pawn
-            if promotion[0] is True:
+            if promotion[0] == True:
                 self.board[newpos[0]][newpos[1]] = promotion[1]
-                if self.white2move is True:
+                if self.white2move == True:
                     # del self.black[piece]
                     position = computer2chess('{0}{1}'.format(newpos[0], newpos[1]))
                     del self.white[piece[1:]]
                     self.white[promotion[1][1:] + str(self.num_promos[0]+2)] = '{0}{1}'.format(position[1], position[0])
                     self.num_promos[0] += 1
-                elif self.white2move is False:
+                elif self.white2move == False:
                     # del self.white[piece]
                     position = computer2chess('{0}{1}'.format(newpos[0], newpos[1]))
                     del self.black[piece[1:]]
@@ -272,7 +272,7 @@ class ChessGame:
             self.choose_piece = False
             self.choose_piece_position = ''
             self.piece_type = ''
-            self.white2move = True if self.white2move is False else False
+            self.white2move = True if self.white2move == False else False
             self.switch_field()
         else:
             self.choose_piece = False
@@ -296,17 +296,17 @@ class ChessGame:
             if abs(newpos[1] - oldpos[1]) > 1 or abs(newpos[0] - oldpos[0]) > 1:
                 return False
             else:
-                if piece_on_newpos is None:
+                if piece_on_newpos == None:
                     return True
                 else:
-                    if self.piece_type[0] is piece_on_newpos[0]:
+                    if self.piece_type[0] == piece_on_newpos[0]:
                         return False
                     else:
                         self.capture = True
                         return True
         ### Rules for Queens
         elif 'Queen' in self.piece_type:
-            if abs(newpos[0]-oldpos[0]) is abs(newpos[1]-oldpos[1]):
+            if abs(newpos[0]-oldpos[0]) == abs(newpos[1]-oldpos[1]):
                 ### moving diagonal
                 return self.check_diagonal(oldpos, newpos)
             else:
@@ -316,7 +316,7 @@ class ChessGame:
             return self.check_straight(oldpos, newpos)
 
         elif 'Bishop' in self.piece_type:
-            if abs(newpos[0] - oldpos[0]) is abs(newpos[1] - oldpos[1]):
+            if abs(newpos[0] - oldpos[0]) == abs(newpos[1] - oldpos[1]):
                 return self.check_diagonal(oldpos, newpos)
             else:
                 return False
@@ -324,8 +324,8 @@ class ChessGame:
             moves = [[-2, -1], [-2, +1], [+2, -1], [+2, +1], [+1, +2], [-1, +2], [+1, -2], [-1, -2]]
             for x in moves:
                 if (np.array(newpos) == (np.array(oldpos) + np.array(x))).all():
-                    if self.board[newpos[0]][newpos[1]] is not None:
-                        if self.board[newpos[0]][newpos[1]][0] is not self.piece_type[0]:
+                    if self.board[newpos[0]][newpos[1]] != None:
+                        if self.board[newpos[0]][newpos[1]][0] != self.piece_type[0]:
                             self.capture = True
                             return True
                         # else:
@@ -342,16 +342,16 @@ class ChessGame:
                 ### not more than 1 field to the side possible
                 # print("seitlich 2")
                 return False
-            if abs(newpos[1]-oldpos[1]) is 1:
+            if abs(newpos[1]-oldpos[1]) == 1:
                 # print("seitlich 1")
-                if piece_on_newpos is None:
+                if piece_on_newpos == None:
                     # print("Feld leer")
                     ### empty field on the side
-                    if self.piece_type[0] is 'w':
+                    if self.piece_type[0] == 'w':
                         # print("weiß")
                         # print(piece_on_newpos, self.board[3][newpos[1]], self.en_passant_possible[0])
-                        if newpos[0] is 2 and piece_on_newpos is None and \
-                                'bPawn' in self.board[3][newpos[1]] and self.en_passant_possible[0] is True:
+                        if newpos[0] == 2 and piece_on_newpos == None and \
+                                'bPawn' in self.board[3][newpos[1]] and self.en_passant_possible[0] == True:
                             # print("en passant")
                             ### en passante capture by white: correct row with empty target field and
                             ### piece to capture has to be a pawn, which moved in the last move
@@ -361,11 +361,11 @@ class ChessGame:
                         else:
                             # print("kein en passante")
                             return False
-                    elif self.piece_type[0] is 'b':
+                    elif self.piece_type[0] == 'b':
                         # print("black")
                         # print(piece_on_newpos, self.board[3][newpos[1]], self.en_passant_possible[0])
-                        if newpos[0] is 5 and piece_on_newpos is None and \
-                                'wPawn' in self.board[4][newpos[1]] and self.en_passant_possible[0] is True:
+                        if newpos[0] == 5 and piece_on_newpos == None and \
+                                'wPawn' in self.board[4][newpos[1]] and self.en_passant_possible[0] == True:
                             # print("en passante")
                             ### en passante capture by black: correct row with empty target field and
                             ### piece to capture has to be a pawn, which moved in the last move
@@ -375,12 +375,12 @@ class ChessGame:
                         else:
                             # print("kein en passante")
                             return False
-                elif piece_on_newpos[0] is self.piece_type[0]:
+                elif piece_on_newpos[0] == self.piece_type[0]:
                     ### capture of piece with same color not possible
                     # print("Feld durch gleiche Farbe belegt")
                     return False
-                elif piece_on_newpos[0] is not self.piece_type[0]:
-                    if self.piece_type[0] is 'w':
+                elif piece_on_newpos[0] != self.piece_type[0]:
+                    if self.piece_type[0] == 'w':
                         if newpos[0]<oldpos[0]:
                             ## capture is only possible in forward direction
                             self.capture = True
@@ -390,7 +390,7 @@ class ChessGame:
                         else:
                             # print("Schlagen nur in Vorwärtsrichtung!!")
                             return False
-                    elif self.piece_type[0] is 'b':
+                    elif self.piece_type[0] == 'b':
                         if newpos[0]>oldpos[0]:
                             ## capture is only possible in forward direction
                             self.capture = True
@@ -402,11 +402,11 @@ class ChessGame:
                             return False
 
             else:
-                if self.piece_type[0] is 'w':
+                if self.piece_type[0] == 'w':
                     # print("weiß")
-                    if oldpos[0]-newpos[0] is 2:
+                    if oldpos[0]-newpos[0] == 2:
                         # print("Doppelzug")
-                        if oldpos[0] is 6:
+                        if oldpos[0] == 6:
                             # print("ok")
                             ### double move by white
                             self.en_passant_possible = [True, False]
@@ -414,17 +414,17 @@ class ChessGame:
                         else:
                             # print("no")
                             return False
-                    elif (oldpos[0]-newpos[0] is 1) and piece_on_newpos is None:
+                    elif (oldpos[0]-newpos[0] == 1) and piece_on_newpos == None:
                         self.en_passant_possible = [False, False]
                         return True
                     else:
                         # print("zu weit")
                         return False
-                if self.piece_type[0] is 'b':
+                if self.piece_type[0] == 'b':
                     # print("black")
-                    if newpos[0]-oldpos[0] is 2:
+                    if newpos[0]-oldpos[0] == 2:
                         # print("Doppelzug")
-                        if oldpos[0] is 1:
+                        if oldpos[0] == 1:
                             self.en_passant_possible = [True, False]
                             # print("ok")
                             ### double move by white
@@ -432,7 +432,7 @@ class ChessGame:
                         else:
                             # print("no")
                             return False
-                    elif (newpos[0]-oldpos[0] is 1) and piece_on_newpos is None:
+                    elif (newpos[0]-oldpos[0] == 1) and piece_on_newpos == None:
                         # print("EInzelzug")
                         self.en_passant_possible = [False, False]
                         return True
@@ -444,12 +444,12 @@ class ChessGame:
         """checks whether a move  is  valid if performed along the array direction
         in array is important: index(oldposition) < index(newposition) """
         for i in range(start, end + 1):
-            if i is end:
-                if array[i] is None:
+            if i == end:
+                if array[i] == None:
                     return True
                 else:
                     # print("end position is")
-                    if array[i][0] is not self.piece_type[0]:
+                    if array[i][0] != self.piece_type[0]:
                         # print("other color")
                         self.capture = True
                         return True
@@ -457,7 +457,7 @@ class ChessGame:
                         return False
             else:
                 # print("between")
-                if array[i] is None:
+                if array[i] == None:
                     continue
                 else:
                     # print("is a piece")
@@ -465,7 +465,7 @@ class ChessGame:
 
     def check_straight(self, oldpos, newpos):
         ### checks if a straight move along a row or column is valid
-        if newpos[0] is oldpos[0]:
+        if newpos[0] == oldpos[0]:
             # print("same row")
             ### moving in the same row
             checkpath_row = self.board[newpos[0]]
@@ -478,7 +478,7 @@ class ChessGame:
                 checkpath_row = checkpath_row[::-1]
             return self.check_if_piece_on_1darray(checkpath_row, start, end)
 
-        elif newpos[1] is oldpos[1]:
+        elif newpos[1] == oldpos[1]:
             # print("same col")
             ### moving in the same column
             checkpath_col = self.board[:,newpos[1]]
@@ -497,7 +497,7 @@ class ChessGame:
         idx = np.array(['{0}{1}'.format(i, j) for i in range(8) for j in range(8)]).reshape((8, 8))
         diag = np.diagonal(idx, oldpos[1] - oldpos[0])
         flipdiag = np.diagonal(np.fliplr(idx), 7 - (oldpos[0] + oldpos[1]))
-        if (newpos[0] - newpos[1]) is (oldpos[0] - oldpos[1]):
+        if (newpos[0] - newpos[1]) == (oldpos[0] - oldpos[1]):
             ### the old and new positions are along the diagonal (upper left to lower right)
             # print("normal diag")
             arr = diag
