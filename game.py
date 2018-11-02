@@ -165,7 +165,7 @@ class ChessGame:
             if string[0] == 'K':
                 promoted_piece += 'Knight'
             elif string[0] == 'B':
-                promoted_piece += 'B==hop'
+                promoted_piece += 'Bishop'
             elif string[0] == 'R':
                 promoted_piece += 'Rook'
             elif string[0] == 'Q':
@@ -209,59 +209,17 @@ class ChessGame:
 
     def make_move(self, string, promotion):
         oldpos = chess2computer(self.choose_piece_position)
-        newpos = chess2computer(string)
-        ### save piece on old field
-        # print(string, newpos, oldpos)
-        piece = self.board[oldpos[0]][oldpos[1]]
-        if self.check_if_valid_move(oldpos, newpos) == True and self.king_in_check(oldpos, newpos) == False:
+        newpos = chess2computer(string[:2])
+        # params_virtualmove = (self.choose_piece_position, self.piece_type, string, promotion, self.board, \
+        #                           self.white, self.black, self.en_passant_possible, self.num_promos)
+        params = [self.choose_piece_position, self.piece_type, string, promotion, self.board, \
+                           self.white, self.black, self.en_passant_possible, self.num_promos]
+        # field = self.white['King'] if self.white2move == True else self.black['King']
+        if self.check_if_valid_move(oldpos, newpos) == True and self.king_in_check(params) == False:
             # print("Move was valid")
-            if self.board[newpos[0]][newpos[1]] == None:
-                ### set piece to new field
-                self.board[newpos[0]][newpos[1]] = piece
-                if piece[0] == 'w':
-                    self.white[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
-                elif piece[0] == 'b':
-                    self.black[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
-
-            else:
-                if self.piece_type[0] == 'w':
-                    captured_piece = self.board[newpos[0]][newpos[1]][1:]
-                    self.white[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
-                    del self.black[captured_piece]
-                elif self.piece_type[0] == 'b':
-                    captured_piece = self.board[newpos[0]][newpos[1]][1:]
-                    self.black[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
-                    del self.white[captured_piece]
-                self.board[newpos[0]][newpos[1]] = piece
-
-            ### remove piece from old field
-            self.board[oldpos[0]][oldpos[1]] = None
-            if self.en_passant_possible[1] == True:
-                ### remove piece, which was captured en passant, too
-                if piece[0] == 'w':
-                    captured_piece = self.board[3][newpos[1]][1:]
-                    del self.black[captured_piece]
-                    self.board[3][newpos[1]] = None
-                elif piece[0] == 'b':
-                    captured_piece = self.board[4][newpos[1]][1:]
-                    del self.white[captured_piece]
-                    self.board[4][newpos[1]] = None
-                self.en_passant_possible = [False, False]
-            ### promote a pawn
-            if promotion[0] == True:
-                self.board[newpos[0]][newpos[1]] = promotion[1]
-                if self.white2move == True:
-                    # del self.black[piece]
-                    position = computer2chess('{0}{1}'.format(newpos[0], newpos[1]))
-                    del self.white[piece[1:]]
-                    self.white[promotion[1][1:] + str(self.num_promos[0]+2)] = '{0}{1}'.format(position[1], position[0])
-                    self.num_promos[0] += 1
-                elif self.white2move == False:
-                    # del self.white[piece]
-                    position = computer2chess('{0}{1}'.format(newpos[0], newpos[1]))
-                    del self.black[piece[1:]]
-                    self.black[promotion[1][1:] + str(self.num_promos[1]+2)] = '{0}{1}'.format(position[1], position[0])
-                    self.num_promos[1] += 1
+            # params_realmove = [self.choose_piece_position, self.piece_type, string, promotion, self.board, \
+            #                       self.white, self.black, self.en_passant_possible, self.num_promos]
+            params = self.make_atomic_move(params, False)
             ### adjust board layout and save move
             self.save_move()
             # print(self.white)
@@ -279,11 +237,208 @@ class ChessGame:
             self.choose_piece_position = ''
             self.piece_type = ''
 
-    def king_in_check(self, oldpos, newpos):
-        """checks if after a given valid move the king is in check:
+    def make_atomic_move(self, params, virtual):
+        """atomic function making a move on some virtual or real board-layout
+            make virtual move: virtual = True: make a move on a virtual (copied) board
+            make real move: virtual = False: make a move on the real board"""
+        piece_pos = params[0]
+        piece_type = params[1]
+        string = params[2]
+        if virtual == True:
+            promotion = params[3].copy()
+            board = params[4].copy()
+            white = params[5].copy()
+            black = params[6].copy()
+            en_passant_possible = params[7].copy()
+            num_promos = params[8].copy()
+        elif virtual == False:
+            promotion = params[3]
+            board = params[4]
+            white = params[5]
+            black = params[6]
+            en_passant_possible = params[7]
+            num_promos = params[8]
+        oldpos = chess2computer(piece_pos)
+        newpos = chess2computer(string[:2])
+        piece = board[oldpos[0]][oldpos[1]]
+        if board[newpos[0]][newpos[1]] == None:
+            ### set piece to new field
+            board[newpos[0]][newpos[1]] = piece
+            if piece[0] == 'w':
+                white[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
+            elif piece[0] == 'b':
+                black[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
+
+        else:
+            if piece_type[0] == 'w':
+                captured_piece = board[newpos[0]][newpos[1]][1:]
+                white[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
+                del black[captured_piece]
+                position = computer2chess('{0}{1}'.format(newpos[0], newpos[1]))
+            elif piece_type[0] == 'b':
+                captured_piece = board[newpos[0]][newpos[1]][1:]
+                black[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
+                del white[captured_piece]
+            board[newpos[0]][newpos[1]] = piece
+
+        ### remove piece from old field
+        board[oldpos[0]][oldpos[1]] = None
+        if en_passant_possible[1] == True:
+            ### remove piece, which was captured en passant, too
+            if piece[0] == 'w':
+                captured_piece = board[3][newpos[1]][1:]
+                del black[captured_piece]
+                board[3][newpos[1]] = None
+            elif piece[0] == 'b':
+                captured_piece = board[4][newpos[1]][1:]
+                del white[captured_piece]
+                board[4][newpos[1]] = None
+            en_passant_possible = [False, False]
+        ### promote a pawn
+        if promotion[0] == True:
+            board[newpos[0]][newpos[1]] = promotion[1]
+            if self.white2move == True:
+                # del black[piece]
+                position = computer2chess('{0}{1}'.format(newpos[0], newpos[1]))
+                del white[piece[1:]]
+                white[promotion[1][1:] + str(num_promos[0] + 2)] = '{0}{1}'.format(position[1], position[0])
+                num_promos[0] += 1
+            elif self.white2move == False:
+                # del white[piece]
+                position = computer2chess('{0}{1}'.format(newpos[0], newpos[1]))
+                del black[piece[1:]]
+                black[promotion[1][1:] + str(num_promos[1] + 2)] = '{0}{1}'.format(position[1], position[0])
+                num_promos[1] += 1
+        params = [piece_pos, piece_type, string, promotion, board, \
+                  white, black, en_passant_possible, num_promos]
+        return params
+
+    def king_in_check(self, params):
+        """checks if after a given valid move the king is in check:"""
+        if self.white2move == True:
+            if 'wKing' in params[1]:
+                field = params[2]
+            else:
+                field = self.white['King']
+        else:
+            if 'bKing' in params[1]:
+                print('King moves')
+                field = params[2]
+            else:
+                field  = self.black['King']
+        return self.field_in_check(params, field, True)
+
+    def field_in_check(self, params, field, virtual):
+        """checks if after a given valid move some field is in check:
             False: move valid   True: move not valid because of check"""
-        ### TODO: check whether the king is in check
-        return False
+        ### check variable: [ pawns/kings, rooks/queens, bishops/queens, knights ]
+        check = np.array([ False, False, False, False ])
+        myfield = chess2computer(field)
+        params = self.make_atomic_move(params, virtual)
+        board = params[4].copy()
+        white = params[5].copy()
+        black = params[6].copy()
+        color = 'w' if self.white2move == False else 'b'
+        ### check one field around myfield (pawn or king)
+        idx = []
+        fields = [[myfield[0] + x, myfield[1] + y] for x in [-1, 0, +1] for y in [-1, 0, +1]]
+        del_idx = []
+        for j, field in enumerate(fields):
+            if (np.array(field) > 7).any() or (np.array(field) < 0).any() or field == myfield:
+                del_idx.append(j)
+        for j in del_idx[::-1]:
+            del fields[j]
+        for field in fields:
+            piece = board[field[0]][field[1]]
+            if piece == None:
+                continue
+            else:
+                if self.white2move == True:
+                    if (field[0] < myfield[0]) and field[1] != myfield[1] and color+'Pawn' in piece:
+                        ### black pawn
+                        check[0] = True
+                    elif color+'King' in piece:
+                        check[0] = True
+                else:
+                    if (field[0] > myfield[0]) and field[1] != myfield[1] and color + 'Pawn' in piece:
+                        ### white pawn
+                        check[0] = True
+                    elif color+'King' in piece:
+                        check[0] = True
+        ### check on a straight line (rook or queen)
+        idx = []
+        row = myfield[0]
+        col = myfield[1]
+        for i,line in enumerate([board[row], board[:,col]]):
+            ## check whether a rook or queen is on a straight line
+            # print(line)
+            idxKing = myfield[(i+1)%2]
+            for j in range(8):
+                if line[j] == None:
+                    continue
+                if color+'Rook' in line[j] or color+'Queen' in line[j]:
+                    if i==0:
+                        idx.append([row, j])
+                    else:
+                        idx.append([j, col])
+        for myidx in idx:
+            check[1] = self.check_straight(board, myfield, myidx)
+        ### check on a diagonal (bishop or queen)
+        idx = []
+        fliparray = np.fliplr(board)
+        idx_arr = np.array(['{0}{1}'.format(i, j) for i in range(8) for j in range(8)]).reshape((8, 8))
+        diag = np.diagonal(idx_arr, myfield[1] - myfield[0])
+        flipdiag = np.diagonal(np.fliplr(idx_arr), 7 - (myfield[0] + myfield[1]))
+        # print(myfield)
+        for i, line in enumerate([diag, flipdiag]):
+            arr = np.diagonal(board, myfield[1] - myfield[0]) if i == 0 else np.diagonal(fliparray, 7 - (myfield[0] + myfield[1]))
+            # print(i, line)
+            # print(arr)
+            for j, index in enumerate(line):
+                # print(j, index)
+                if arr[j] == None:
+                    continue
+                else:
+                    piece = arr[j]#board[int(index[0])][int(index[1])]
+                    # print(piece)
+                if color+'Bishop' in piece or color+'Queen' in piece:
+                    idx.append([int(index[0]), int(index[1])])
+        # print(idx)
+        for myidx in idx:
+            # print(self.check_diagonal(board, myfield, myidx))
+            check[2] = self.check_diagonal(board, myfield, myidx)
+
+        ### check for knights
+        fields = [np.array(myfield) + np.array(x) for x in \
+                  [[-2, -1], [-2, +1], [+2, -1], [+2, +1], [+1, +2], [-1, +2], [+1, -2], [-1, -2]]]
+        del_idx = []
+        for j, field in enumerate(fields):
+            if (np.array(field) > 7).any() or (np.array(field) < 0).any():
+                del_idx.append(j)
+        for j in del_idx[::-1]:
+            del fields[j]
+        for field in fields:
+            piece = board[field[0]][field[1]]
+            if piece == None:
+                continue
+            else:
+                if color + 'Knight' in piece:
+                    check[3] = True
+
+
+
+        if check.any() == True:
+            print("You are in check!!!")
+        return check.any()
+
+
+
+
+
+
+
+    def check_in_line(self, line):
+        """is there a check in a given line"""
 
 
     def check_if_valid_move(self, oldpos, newpos):
@@ -308,16 +463,16 @@ class ChessGame:
         elif 'Queen' in self.piece_type:
             if abs(newpos[0]-oldpos[0]) == abs(newpos[1]-oldpos[1]):
                 ### moving diagonal
-                return self.check_diagonal(oldpos, newpos)
+                return self.check_diagonal(self.board, oldpos, newpos)
             else:
-                return self.check_straight(oldpos, newpos)
+                return self.check_straight(self.board, oldpos, newpos)
 
         elif 'Rook' in self.piece_type:
-            return self.check_straight(oldpos, newpos)
+            return self.check_straight(self.board, oldpos, newpos)
 
         elif 'Bishop' in self.piece_type:
             if abs(newpos[0] - oldpos[0]) == abs(newpos[1] - oldpos[1]):
-                return self.check_diagonal(oldpos, newpos)
+                return self.check_diagonal(self.board, oldpos, newpos)
             else:
                 return False
         elif 'Knight' in self.piece_type:
@@ -463,12 +618,12 @@ class ChessGame:
                     # print("is a piece")
                     return False
 
-    def check_straight(self, oldpos, newpos):
+    def check_straight(self, board, oldpos, newpos):
         ### checks if a straight move along a row or column is valid
         if newpos[0] == oldpos[0]:
             # print("same row")
             ### moving in the same row
-            checkpath_row = self.board[newpos[0]]
+            checkpath_row = board[newpos[0]]
             if oldpos[1] < newpos[1]:
                 start = oldpos[1] + 1
                 end = newpos[1]
@@ -481,7 +636,7 @@ class ChessGame:
         elif newpos[1] == oldpos[1]:
             # print("same col")
             ### moving in the same column
-            checkpath_col = self.board[:,newpos[1]]
+            checkpath_col = board[:,newpos[1]]
             if oldpos[0] < newpos[0]:
                 start = oldpos[0] + 1
                 end = newpos[0]
@@ -491,9 +646,9 @@ class ChessGame:
                 checkpath_col = checkpath_col[::-1]
             return self.check_if_piece_on_1darray(checkpath_col, start, end)
 
-    def check_diagonal(self, oldpos, newpos):
+    def check_diagonal(self, board, oldpos, newpos):
         ### checks whether a move along a diagonal is valid
-        fliparray = np.fliplr(self.board)
+        fliparray = np.fliplr(board)
         idx = np.array(['{0}{1}'.format(i, j) for i in range(8) for j in range(8)]).reshape((8, 8))
         diag = np.diagonal(idx, oldpos[1] - oldpos[0])
         flipdiag = np.diagonal(np.fliplr(idx), 7 - (oldpos[0] + oldpos[1]))
@@ -501,7 +656,7 @@ class ChessGame:
             ### the old and new positions are along the diagonal (upper left to lower right)
             # print("normal diag")
             arr = diag
-            check_diag = np.diagonal(self.board, oldpos[1] - oldpos[0])
+            check_diag = np.diagonal(board, oldpos[1] - oldpos[0])
             ### get the correct indices for start- and endfield
             if oldpos[0] < newpos[0]:
                 startfield = '{0}{1}'.format(oldpos[0] + 1, oldpos[1] + 1)
