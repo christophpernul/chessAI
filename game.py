@@ -125,6 +125,8 @@ class ChessGame:
         self.capture = False
         ### counts number of promotions for both players
         self.num_promos = [0, 0]
+        ### checks if castling is possible [white:short, white: long, black:short, black:long]
+        self.castling = [True, True, True, True]
 
 
     def switch_field(self):
@@ -215,7 +217,7 @@ class ChessGame:
         params = [self.choose_piece_position, self.piece_type, string, promotion, self.board, \
                            self.white, self.black, self.en_passant_possible, self.num_promos]
         # field = self.white['King'] if self.white2move == True else self.black['King']
-        if self.check_if_valid_move(oldpos, newpos) == True and self.king_in_check(params) == False:
+        if self.check_if_valid_move(params, oldpos, newpos) == True and self.king_in_check(params, False) == False:
             # print("Move was valid")
             # params_realmove = [self.choose_piece_position, self.piece_type, string, promotion, self.board, \
             #                       self.white, self.black, self.en_passant_possible, self.num_promos]
@@ -266,8 +268,45 @@ class ChessGame:
             board[newpos[0]][newpos[1]] = piece
             if piece[0] == 'w':
                 white[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
+                if virtual == False:
+                    ## white castling
+                    if 'King' in piece and newpos[1] == 2 and self.castling[1] == True:
+                        ## white castling long
+                        board[7][3] = board[7][0]
+                        board[7][0] = None
+                        white['Rook0'] = 'd1'
+                        self.castling[1] = False
+                    elif 'King' in piece and newpos[1] == 6 and self.castling[0] == True:
+                        ## white castling short
+                        board[7][5] = board[7][7]
+                        board[7][7] = None
+                        white['Rook1'] = 'f1'
+                        self.castling[0] = False
+                    if 'King' in piece or 'Rook0' in piece or 'Rook1' in piece:
+                        self.castling[0] = False
+                        self.castling[1] = False
+
             elif piece[0] == 'b':
                 black[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
+                if virtual == False:
+                    ## black castling
+                    if 'King' in piece and newpos[1] == 2 and self.castling[3] == True:
+                        ## black castling long
+                        board[0][3] = board[0][0]
+                        board[0][0] = None
+                        white['Rook0'] = 'd8'
+                        self.castling[3] = False
+                    elif 'King' in piece and newpos[1] == 6 and self.castling[2] == True:
+                        ## black castling short
+                        board[0][5] = board[0][7]
+                        board[0][7] = None
+                        white['Rook1'] = 'f8'
+                        self.castling[2] = False
+                    if 'King' in piece or 'Rook0' in piece or 'Rook1' in piece:
+                        self.castling[2] = False
+                        self.castling[3] = False
+
+
 
         else:
             if piece_type[0] == 'w':
@@ -280,9 +319,9 @@ class ChessGame:
                 black[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
                 del white[captured_piece]
             board[newpos[0]][newpos[1]] = piece
-
         ### remove piece from old field
         board[oldpos[0]][oldpos[1]] = None
+
         if en_passant_possible[1] == True:
             ### remove piece, which was captured en passant, too
             if piece[0] == 'w':
@@ -313,16 +352,15 @@ class ChessGame:
                   white, black, en_passant_possible, num_promos]
         return params
 
-    def king_in_check(self, params):
+    def king_in_check(self, params, castling):
         """checks if after a given valid move the king is in check:"""
         if self.white2move == True:
-            if 'wKing' in params[1]:
+            if 'wKing' in params[1] and castling == False:
                 field = params[2]
             else:
                 field = self.white['King']
         else:
-            if 'bKing' in params[1]:
-                print('King moves')
+            if 'bKing' in params[1] and castling == False:
                 field = params[2]
             else:
                 field  = self.black['King']
@@ -441,23 +479,61 @@ class ChessGame:
         """is there a check in a given line"""
 
 
-    def check_if_valid_move(self, oldpos, newpos):
+    def check_if_valid_move(self, params, oldpos, newpos):
         piece_on_newpos = self.board[newpos[0]][newpos[1]]
         ### Rules for Kings
         if 'King' in self.piece_type:
-            ### TODO: Rochade
-            ##
-            ##
-            if abs(newpos[1] - oldpos[1]) > 1 or abs(newpos[0] - oldpos[0]) > 1:
+            idx = [0, 1] if self.white2move == True else [2, 3]
+            check = []
+            if abs(newpos[1] - oldpos[1]) == 2:
+                if self.king_in_check(params, True) == False:
+                    if (newpos[0] == 0 or newpos[0] == 7):
+                        if newpos[1] == 6 and self.castling[idx[0]] == True:
+                            ### short castling
+                            for j in [5, 6]:
+                                myfield = '{0}{1}'.format(list('abcdefgh')[j], 8-newpos[0])
+                                if self.field_in_check(params, myfield, True) == False and \
+                                    self.board[newpos[0]][j] == None:
+                                    check.append(True)
+                                else:
+                                    check.append(False)
+                            if (np.array(check) == True).all():
+                                return True
+                            else:
+                                return False
+                        elif newpos[1] == 2 and self.castling[idx[1]] == True:
+                            ### long castling
+                            for j in [2, 3]:
+                                myfield = '{0}{1}'.format(list('abcdefgh')[j], 8-newpos[0])
+                                if self.field_in_check(params, myfield, True) == False and \
+                                    self.board[newpos[0]][j] == None:
+                                    check.append(True)
+                                else:
+                                    check.append(False)
+                            if (np.array(check) == True).all():
+                                return True
+                            else:
+                                return False
+                        else:
+                            return False
+                    else:
+                        return False
+                else:
+                    return False
+            elif abs(newpos[1] - oldpos[1]) > 2 or abs(newpos[0] - oldpos[0]) > 1:
                 return False
             else:
                 if piece_on_newpos == None:
+                    for j in idx:
+                        self.castling[j] = False
                     return True
                 else:
                     if self.piece_type[0] == piece_on_newpos[0]:
                         return False
                     else:
                         self.capture = True
+                        for j in idx:
+                            self.castling[j] = False
                         return True
         ### Rules for Queens
         elif 'Queen' in self.piece_type:
@@ -468,7 +544,23 @@ class ChessGame:
                 return self.check_straight(self.board, oldpos, newpos)
 
         elif 'Rook' in self.piece_type:
-            return self.check_straight(self.board, oldpos, newpos)
+            validmove = self.check_straight(self.board, oldpos, newpos)
+            if validmove == True:
+                if self.white2move == True:
+                   if 'Rook0' in self.piece_type:
+                       ## short castling not possible anymore
+                       self.castling[0] = False
+                   elif 'Rook1' in self.piece_type:
+                       ## long castling not possible anymore
+                       self.castling[1] = False
+                else:
+                    if 'Rook1' in self.piece_type:
+                        ## short castling not possible anymore
+                        self.castling[2] = False
+                    elif 'Rook0' in self.piece_type:
+                        ## long castling not possible anymore
+                        self.castling[3] = False
+            return validmove
 
         elif 'Bishop' in self.piece_type:
             if abs(newpos[0] - oldpos[0]) == abs(newpos[1] - oldpos[1]):
