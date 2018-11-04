@@ -10,13 +10,13 @@ Line 2 needed to run flask with python3
 ### import own module named game
 import importlib
 gf = importlib.import_module('game')
-
 import json
-
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, send_from_directory, jsonify
 app = Flask(__name__)
 
-game = gf.ChessGame()
+dir = "data"
+
+game = gf.ChessGame(dir)
 a = game.set_initial_pieces()
 
 @app.route('/')
