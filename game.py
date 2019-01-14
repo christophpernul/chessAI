@@ -42,11 +42,22 @@ def promotion_fields(array):
     return fields
 
 
-def map_array2fieldconfig(array):
+def map_array2fieldconfig(array, white2move, choosepiece):
+    #TODO: outsource and rename to just create the template for HTML Code
     """ A function mapping the 8x8 board (array: None value means no piece) to a dictionary used for the template
          Dictionary: {key: [imagename, css_class, row_number]} with additional rows 0 and 9, which display the row number"""
     field = {}
     promote_fields = promotion_fields(array)
+    if white2move == True:
+        ## nextplayer: redirects to same page if no piece is selected
+        ## redirects to other page if a piece is selected and player switches
+        nextplayer = 'b' if choosepiece == True else 'w'
+        field['moving'] = 'w'+nextplayer
+        # print(field['moving'])
+    else:
+        nextplayer = 'w' if choosepiece == True else 'b'
+        field['moving'] = 'b'+nextplayer
+        # print(field['moving'])
     ### top row
     for i, let in enumerate(['', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', '']):
         field['top'+str(i)] = [let, None, None]
@@ -81,8 +92,10 @@ def map_array2fieldconfig(array):
     return field
 
 def invert_fieldconfig(field):
+    #TODO has to be rewritten
     newfield = {}
-    keys = list(field.keys())[::-1]
+    keys = list(field.keys())[::-1][:-1]
+    keys.insert(0, list(field.keys())[0])## places the id for the container first
     for key in keys:
         if key == "right":
             newkey = "left"
@@ -162,7 +175,7 @@ class ChessGame:
             self.board[i][3] = '{0}Queen'.format(color)
             self.board[i][4] = '{0}King'.format(color)
         ### create dict used for the template
-        self.field_info = map_array2fieldconfig(self.board)
+        self.field_info = map_array2fieldconfig(self.board, self.white2move, self.choose_piece)
         self.inverse_field_info = invert_fieldconfig(self.field_info)
         self.switch_field()
 
@@ -248,7 +261,8 @@ class ChessGame:
             if self.king_in_check(params, color2check, color2move, False) == True:
                 action += '+'
             self.save_move(oldpos, newpos, action)
-            self.field_info = map_array2fieldconfig(self.board)
+            self.white2move = True if self.white2move == False else False
+            self.field_info = map_array2fieldconfig(self.board, self.white2move, self.choose_piece)
             self.inverse_field_info = invert_fieldconfig(self.field_info)
             ### No piece selected after move
             self.choose_piece = False
@@ -256,7 +270,7 @@ class ChessGame:
             self.castle = -1
             self.choose_piece_position = ''
             self.piece_type = ''
-            self.white2move = True if self.white2move == False else False
+            # self.white2move = True if self.white2move == False else False
             self.switch_field()
         else:
             self.choose_piece = False
@@ -902,16 +916,29 @@ class ChessGame:
         return 1
 
     def check_game_status(self):
+        #TODO
         """Checks game status, whether win/loss/remis
         """
         if 'King' not in self.white:
             print('Black wins')
-            return 1
+            # self.field_info['info'] = 'Black wins!'
+            return "win:b"
         elif 'King' not in self.black:
             print('White wins')
-            return 1
+            # self.field_info['info'] = 'White wins!'
+            return "win:w"
+        # elif self.check_remis == True:
+        #     print("Remis!")
+        #     return("draw")
         else:
+            # self.field_info['info'] = ''
             return 0
+    # def resign(self, player):
+        ## not ready!!!
+        #TODO
+        """Some human player resigns"""
+        # self.field_info['info'] = 'White resigns. Black wins.' \
+        #     if player == 'w' else 'Black resigns. White wins!'
 
 
 

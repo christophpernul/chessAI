@@ -1,7 +1,8 @@
 html,
 body {
-  
+
 }
+
 .container {
   display: flex;
   flex-direction: rows;
@@ -9,7 +10,17 @@ body {
   flex-direction: rows;
   justify-content: center;
   vertical-align: middle;
+}
+
+.board-container {
+  display: flex;
+  flex-direction: rows;
+  flex-wrap: wrap;
+  flex-direction: rows;
+  justify-content: center;
+  vertical-align: middle;
   /*margin: auto;*/
+  flex: 0 0 66%;
   height: 800px;
   width: 800px;
 }
@@ -21,8 +32,22 @@ body {
   flex-direction: cols;
   justify-content: center;
   vertical-align: middle;
+  flex: 0 0 34%;
   /*margin: auto;*/
-  height: 80px;
+  height: 320px;
+  width: 320px;
+}
+
+.game-container {
+  display: flex;
+  flex-direction: cols;
+  flex-wrap: wrap;
+  flex-direction: cols;
+  justify-content: center;
+  vertical-align: middle;
+  flex: 0 0 34%;
+  /*margin: auto;*/
+  height: 300px;
   width: 320px;
 }
 
@@ -35,6 +60,14 @@ align-self: center;
 /*width: 60%;
 display: block;
 height: 90%*/
+}
+
+.left {
+  align-self: left;
+}
+
+.right {
+  align-self: right;
 }
 
 .white-box {
@@ -72,6 +105,39 @@ justify-content: center;
 flex: 0 0 25%;
 height: 100%;
 background-color: #bf8040;
+}
+
+.game-boxes {
+/*max-height: 10%;
+position: relative;*/
+align-items: center;
+justify-content: center;
+flex: 0 0 80%;
+height: 17%;
+}
+
+#info {
+  display: flex;
+  font-weight: bold;
+  background-color: darkgrey;
+}
+
+#resign {
+  display: flex;
+  font-weight: bold;
+  background-color: #cc0000;
+}
+
+#remis {
+  display: flex;
+  font-weight: bold;
+  background-color: #ff9900;
+}
+
+#newgame {
+  display: flex;
+  font-weight: bold;
+  background-color: #33cc33;
 }
 
 .bordertop {

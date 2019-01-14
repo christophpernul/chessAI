@@ -24,7 +24,6 @@ a = game.set_initial_pieces()
 def index():
     field = game.field
     return render_template("index.html", field=field)
-    # return render_template("testFlask_index.html", field=field)
 
 @app.route('/move', methods = ['POST', 'GET'])
 def move():
@@ -39,7 +38,68 @@ def move():
             return redirect(url_for('move'))
     else:
         field = game.field
+        # print(field["info"])
     return render_template("index.html", field=field)
+
+@app.route('/remis', methods = ['POST', 'GET'])
+## not ready!!!
+def remis():
+    if request.method=="POST":
+        player = request.get_json(force=True)
+        # print(data)
+        # game.offer_draw(player)
+        # if game.choose_piece == True:
+        #     return redirect(url_for('index'))
+        # else:
+        #     return redirect(url_for('move'))
+    field = game.field
+    return redirect(url_for('index'))
+
+@app.route('/resign', methods = ['POST', 'GET'])
+## not ready!!!
+def resign():
+    if request.method=="POST":
+        player = request.get_json(force=True)
+        # print(data)
+        game.resign(player)
+        # if game.choose_piece == True:
+        #     return redirect(url_for('index'))
+        # else:
+        #     return redirect(url_for('move'))
+
+    field = game.field
+    return redirect(url_for('index'))
+
+# @app.route('/w', methods = ['POST', 'GET'])
+# def w():
+#     if request.method=="POST":
+#         data = request.get_json(force=True)
+#         # print(data)
+#         game.human_move(data)
+#         field = game.field
+#         # if game.choose_piece == True:
+#         #     return redirect(url_for('index'))
+#         # else:
+#         #     return redirect(url_for('move'))
+#     else:
+#         field = game.field
+#     return render_template("index.html", field=field)
+#
+# @app.route('/b', methods = ['POST', 'GET'])
+# def b():
+#     if request.method=="POST":
+#         data = request.get_json(force=True)
+#         # print(data)
+#         game.human_move(data)
+#         field = game.field
+#         # if game.choose_piece == True:
+#         #     return redirect(url_for('index'))
+#         # else:
+#         #     return redirect(url_for('move'))
+#     else:
+#         field = game.field
+#     return render_template("index.html", field=field)
+
 
 
 
