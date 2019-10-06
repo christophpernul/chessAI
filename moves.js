@@ -13,7 +13,7 @@ $(document).ready(function() {
 	});
 	$("#newgame").click(function(){
 		console.log("Newgame!");
-		$.post("index", JSON.stringify(moving), function(){window.location = "/index"});
+		$.post("newgame", JSON.stringify(moving), function(){window.location = "/newgame"});
 	});
 
 	if ( $("#info").text() == " " ) {

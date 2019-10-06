@@ -10,43 +10,45 @@
 <!--  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">-->
   <link rel="stylesheet" type="text/css" href="../static/css/style.css">
   <script src="http://code.jquery.com/jquery-latest.min.js"></script>
-  <script src="../static/moves.js"></script>
+  <script src="../moves.js"></script>
 
 </head>
 <body>
     <div class="container">
         <div class="left">
-            {% for key, value in field.items() %}
-                {%  if key=="moving" %}
+            <div class="board-container">
+            {% for key, value in board.items() %}
+                <!--{%  if key=="moving" %}
                     <div class="board-container" id="{{ value }}">
                 {% else %}
+                -->
                     {% if key[:-1]=="top" %}
-                        <div class="white-box borderbottom">{{ value[0] }}</div>
+                        <div class="white-box borderbottom">{{ value[1] }}</div>
                     {% endif %}
                     {% if key[:-1]=="left" %}
-                            <div class="white-box borderright">{{ value[0] }}</div>
+                            <div class="white-box borderright">{{ value[1] }}</div>
                     {% endif %}
-                    {% if value[0] is none %}
-                        <div class="board {{ value[1] }}" id="{{ key }}"></div>
-                    {% elif value[2] is not none %}
-                        <div class="board {{ value[1] }}" id="{{ key }}"><img class="center" src="../static/image/{{ value[0] }}"/></img></div>
+                    {% if value[0] == "noPiece" %}
+                        <div class="board {{ value[2] }}" id="{{ key }}"></div>
+                    {% elif value[0] == "Piece" %}
+                        <div class="board {{ value[2] }}" id="{{ key }}"><img class="center" src="../static/image/{{ value[1] }}"/></img></div>
                     {% endif %}
                     {% if key[:-1]=="right" %}
-                        <div class="white-box borderleft">{{ value[0] }}</div>
+                        <div class="white-box borderleft">{{ value[1] }}</div>
                     {% endif %}
                     {% if key[:-1]=="bottom" %}
-                            <div class="white-box bordertop">{{ value[0] }}</div>
+                            <div class="white-box bordertop">{{ value[1] }}</div>
                     {% endif %}
-                {% endif %}
+               <!-- {% endif %}-->
 
             {% endfor %}
-                    </div>
+            </div>
         </div>
         <div class="right">
             <div class="game-container">
                 <div class="game-boxes"></div>
                 <div class="game-boxes"></div>
-                <!-- for key, value in field.items() %}
+                <!-- for key, value in boardDict.items() %}
                      if key=="info" %}-->
                         <div class="game-boxes" id="info"><p> </p></div>
                     <!-- endif %}
@@ -54,6 +56,7 @@
                 <div class="game-boxes" id="remis">OFFER DRAW</div>
                 <div class="game-boxes" id="resign">RESIGN</div>
                 <div class="game-boxes" id="newgame">NEW GAME</div>
+                <div class="game-boxes"></div>
             </div>
 
             <div class="pieces-container" id="promotion">

@@ -4,124 +4,41 @@
 Created on Sun Oct 14 21:10:17 2018
 
 @author: chris
+This file serves the complete game engine
 """
 import numpy as np
-import re
 import uuid
 import datetime
 
+import game_lib
+
+### Image file names used for the UI
 images = dict({'whitePawn':'Chess_plt60.png', 'whiteKnight':'Chess_nlt60.png', 'whiteBishop':'Chess_blt60.png', \
                'whiteRook': 'Chess_rlt60.png', 'whiteQueen':'Chess_qlt60.png', 'whiteKing':'Chess_klt60.png',\
                 'blackPawn':'Chess_pdt60.png', 'blackKnight':'Chess_ndt60.png', 'blackBishop':'Chess_bdt60.png', \
                'blackRook': 'Chess_rdt60.png', 'blackQueen':'Chess_qdt60.png', 'blackKing':'Chess_kdt60.png'})
 
-def chess2computer(string):
-    letter = string[0]
-    number = string[1]
-    return [8-int(number), ord(letter)-97]
 
-def computer2chess(string):
-    letter = chr(97+int(string[1]))
-    return [8 - int(string[0]), letter]
-
-def promotion_fields(array):
-    """ This function gets the board array and returns a list of all fields, where
-        a promotion of a pawn is possible"""
-    fields = []
-    for j in range(8):
-        if array[1][j] != None:
-            if 'wPawn' in array[1][j]:
-                fields.append((0,j))
-                fields.append((0, j-1))
-                fields.append((0, j+1))
-        if array[6][j] != None:
-            if 'bPawn' in array[6][j]:
-                fields.append((7,j))
-                fields.append((7, j-1))
-                fields.append((7, j+1))
-    return fields
-
-
-def map_array2fieldconfig(array, white2move, choosepiece):
-    #TODO: outsource and rename to just create the template for HTML Code
-    """ A function mapping the 8x8 board (array: None value means no piece) to a dictionary used for the template
-         Dictionary: {key: [imagename, css_class, row_number]} with additional rows 0 and 9, which display the row number"""
-    field = {}
-    promote_fields = promotion_fields(array)
-    if white2move == True:
-        ## nextplayer: redirects to same page if no piece is selected
-        ## redirects to other page if a piece is selected and player switches
-        nextplayer = 'b' if choosepiece == True else 'w'
-        field['moving'] = 'w'+nextplayer
-        # print(field['moving'])
-    else:
-        nextplayer = 'w' if choosepiece == True else 'b'
-        field['moving'] = 'b'+nextplayer
-        # print(field['moving'])
-    ### top row
-    for i, let in enumerate(['', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', '']):
-        field['top'+str(i)] = [let, None, None]
-    for i in range(8):
-        ### create entry for 0th column displaying only the row number
-        field['left'+str(i)] = [str(8 - i), None, None]
-        for j, let in enumerate(list('abcdefgh')):
-            ### get color of pieces
-            if str(array[i][j])[0] == 'w':
-                color = 'white'
-            else:
-                color = 'black'
-            ### get color of field on the board
-            if i%2 == 0:
-                css_class = 'white-box' if j % 2 == 0 else 'box'
-            else:
-                css_class = 'white-box' if j % 2 == 1 else 'box'
-            ### add "promote" to css class, if a pawn is able to promote on that field
-            if (i,j) in promote_fields:
-                css_class += ' P'
-            ### entries for a field on the board
-            if array[i][j] != None:
-                key = color+re.sub('[0-9]', '', str(array[i][j]))[1:]
-                field[let + str(8 - i) +str(" ")+str(array[i][j])] = [images[key], css_class, str(8 - i)]
-            else:
-                field[let + str(8 - i)] = [None, css_class, str(8 - i)]
-        ### create entry for 9th column displaying only the row number
-        field['right'+str(i)] = [str(8 - i), None, None]
-    ### bottom row
-    for i, let in enumerate(['', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', '']):
-        field['bottom'+str(i)] = [let, None, None]
-    return field
-
-def invert_fieldconfig(field):
-    #TODO has to be rewritten
-    newfield = {}
-    keys = list(field.keys())[::-1][:-1]
-    keys.insert(0, list(field.keys())[0])## places the id for the container first
-    for key in keys:
-        if key == "right":
-            newkey = "left"
-        elif key == "left":
-            newkey = "right"
-        elif key == "top":
-            newkey="bottom"
-        elif key == "bottom":
-            newkey="top"
-        else:
-            newkey = key
-        newfield[newkey] = field[key]
-    return newfield
 
 class ChessGame:
-    def __init__(self, dir):
+    """
+        This class is used to initialize a chess game. It has to be called once and initializes the board configuration
+    """
+    def __init__(self, directory_movehistory):
+        """
+
+        :param directory_movehistory: directory, where to save the sequence of moves
+        """
         now = datetime.datetime.now()
-        fname = dir + "/" + str(now.strftime("%Y-%m-%d_%H:%M:%S"))
-        self.filename = fname + str(uuid.uuid4().hex) + ".txt"
+        directory_movehistory = directory_movehistory if directory_movehistory[-1] == "/" else directory_movehistory + "/"
+        self.filename_movehistory = directory_movehistory + str(now.strftime("%Y-%m-%d_%H:%M:%S")) + "_" + str(uuid.uuid4().hex) + ".txt"
         self.moves = []
         self.white2move = True
         self.num_moves = 0
         self.num_same_moves = 0
-        ###  list of every field on the board: Boolean variable decides whether there is a piece on the given field
+        ###  array of every boardDict on the board: Boolean variable decides whether there is a piece on the given boardDict
         self.board = np.full((8,8), None)
-        ###  dicts of all pieces of white and black and their position on the board: used to eval winner
+        ###  dicts of all pieces of white and black and their position on the board: used to evaluate winner
         self.white = dict({'Pawn0' : 'a2', 'Pawn1':'b2', 'Pawn2':'c2', 'Pawn3':'d2', 'Pawn4':'e2', \
                            'Pawn5': 'f2', 'Pawn6':'g2', 'Pawn7':'h2', 'Rook0': 'a1', 'Rook1':'h1',\
                            'Knight0':'b1', 'Knight1':'g1', 'Bishop0':'c1', 'Bishop1':'f1', \
@@ -130,12 +47,10 @@ class ChessGame:
                            'Pawn5': 'f7', 'Pawn6': 'g7', 'Pawn7': 'h7', 'Rook0': 'a8', 'Rook1': 'h8', \
                            'Knight0': 'b8', 'Knight1': 'g8', 'Bishop0': 'c8', 'Bishop1': 'f8', \
                            'Queen': 'd8', 'King': 'e8'})
-        self.field_info = {} ## stores field config for white to move
-        self.inverse_field_info = {} ## stores field config for black to move
-        ## field to use in the template whether black or white has to move
-        self.field = {}
-        self.choose_piece = False
-        self.choose_piece_position = ''
+        # self.white = dict({'King':'e4', 'Pawn1':'d6'})
+        # self.black = dict({'King': 'e2', 'Queen': 'f2'})
+        self.piece_chosen = False
+        self.chosen_piece_position = ''
         self.piece_type = ''
         ### First item checks if en passant move is possible (when the previous move was a double move)
         ### Second item checks whether a piece, which was captured en passant, has to be removed
@@ -148,13 +63,20 @@ class ChessGame:
         self.castling = [True, True, True, True]
         self.castle = -1
 
+    def generate_html_config(self):
+        """
+        The correct html configuration is created depending on, which player's turn we have
+        :return boardDict: dictionary of the board configuration used for the HTML template
+        """
+        boardDict = game_lib.create_boardDict_forHTML(self.board)
+        boardDict = boardDict if self.white2move == True else game_lib.invert_boardDict(boardDict)
+        return boardDict
 
-
-    def switch_field(self):
-        self.field = self.field_info if self.white2move == True else self.inverse_field_info
-
-    def set_initial_pieces(self):
-        """Places all figures on the board
+    def set_initial_pieces(self, type=None):
+        """
+        Places all figures on the board for a classic game of chess
+        :param type (string): One can use different types of initial piece arangement, which is
+                            stored in game_lib.py -> use for testing purposes
         """
         for j in range(8):
             ## fill in all pawns
@@ -174,10 +96,12 @@ class ChessGame:
             self.board[i][5] = '{0}Bishop1'.format(color)
             self.board[i][3] = '{0}Queen'.format(color)
             self.board[i][4] = '{0}King'.format(color)
-        ### create dict used for the template
-        self.field_info = map_array2fieldconfig(self.board, self.white2move, self.choose_piece)
-        self.inverse_field_info = invert_fieldconfig(self.field_info)
-        self.switch_field()
+
+        # self.board = np.full((8, 8), None)
+        # self.board[4][4] = 'wKing'
+        # self.board[6][4] = 'bKing'
+        # self.board[2][3] = 'wPawn1'
+        # self.board[6][5] = 'bQueen'
 
 
     def human_move(self, string):
@@ -197,31 +121,31 @@ class ChessGame:
         else:
             promotion = [False, None]
         if len(string)>2:
-            ### there is a piece on the selected field
+            ### there is a piece on the selected boardDict
             piecepos = string[:2]
             piecetype = string[3:]
-            if self.choose_piece == True:
+            if self.piece_chosen == True:
                 if (self.white2move == True and piecetype[0] != 'w') or (self.white2move == False and piecetype[0] != 'b'):
                     self.make_move(string, promotion)
                 else:
                     print("Wrong piece selected - you cannot move onto your own piece!")
-                    self.choose_piece = False
-                    self.choose_piece_position = ''
+                    self.piece_chosen = False
+                    self.chosen_piece_position = ''
                     self.piece_type = ''
 
-            elif self.choose_piece == False:
-                self.choose_piece_position = string[:2]
+            elif self.piece_chosen == False:
+                self.chosen_piece_position = string[:2]
                 self.piece_type = string[3:]
-                pos = chess2computer(self.choose_piece_position)
+                pos = chess2computer(self.chosen_piece_position)
                 if (self.white2move == True and self.piece_type[0] != 'w') or (self.white2move == False and self.piece_type[0] != 'b'):
                     print("Wrong piece selected!")
-                    self.choose_piece = False
-                    self.choose_piece_position = ''
+                    self.piece_chosen = False
+                    self.chosen_piece_position = ''
                     self.piece_type = ''
                 else:
-                    self.choose_piece = True
+                    self.piece_chosen = True
         else:
-            if self.choose_piece == True:
+            if self.piece_chosen == True:
                 self.make_move(string, promotion)
             else:
                 print("You have to choose a piece first")
@@ -229,10 +153,10 @@ class ChessGame:
 
 
     def make_move(self, string, promotion):
-        oldpos = chess2computer(self.choose_piece_position)
+        oldpos = chess2computer(self.chosen_piece_position)
         newpos = chess2computer(string[:2])
-        params = [self.choose_piece_position, self.piece_type, string, promotion, self.board, \
-                           self.white, self.black, self.en_passant_possible, self.num_promos]
+        params = [self.chosen_piece_position, self.piece_type, string, promotion, self.board, \
+                  self.white, self.black, self.en_passant_possible, self.num_promos]
         color2move = 'w' if self.white2move == True else 'b'
         color2check = color2move
         if self.check_if_valid_move(params, oldpos, newpos) == True and self.king_in_check(params, color2check, color2move, False) == False:
@@ -255,26 +179,23 @@ class ChessGame:
                         action = '0-0-0'
                     else:
                         action = ''
-            params = [self.choose_piece_position, self.piece_type, string, promotion, self.board, \
+            params = [self.chosen_piece_position, self.piece_type, string, promotion, self.board, \
                       self.white, self.black, self.en_passant_possible, self.num_promos]
             color2check = 'b' if self.white2move == True else 'w'
             if self.king_in_check(params, color2check, color2move, False) == True:
                 action += '+'
             self.save_move(oldpos, newpos, action)
             self.white2move = True if self.white2move == False else False
-            self.field_info = map_array2fieldconfig(self.board, self.white2move, self.choose_piece)
-            self.inverse_field_info = invert_fieldconfig(self.field_info)
             ### No piece selected after move
-            self.choose_piece = False
+            self.piece_chosen = False
             self.capture = False
             self.castle = -1
-            self.choose_piece_position = ''
+            self.chosen_piece_position = ''
             self.piece_type = ''
             # self.white2move = True if self.white2move == False else False
-            self.switch_field()
         else:
-            self.choose_piece = False
-            self.choose_piece_position = ''
+            self.piece_chosen = False
+            self.chosen_piece_position = ''
             self.piece_type = ''
 
     def make_atomic_move(self, params, virtual):
@@ -302,7 +223,7 @@ class ChessGame:
         newpos = chess2computer(string[:2])
         piece = board[oldpos[0]][oldpos[1]]
         if board[newpos[0]][newpos[1]] == None:
-            ### set piece to new field
+            ### set piece to new boardDict
             board[newpos[0]][newpos[1]] = piece
             if piece[0] == 'w':
                 white[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
@@ -361,7 +282,7 @@ class ChessGame:
                 black[piece[1:]] = '{0}{1}'.format(computer2chess(newpos)[1], computer2chess(newpos)[0])
                 del white[captured_piece]
             board[newpos[0]][newpos[1]] = piece
-        ### remove piece from old field
+        ### remove piece from old boardDict
         board[oldpos[0]][oldpos[1]] = None
         if en_passant_possible[1] == True:
             ### remove piece, which was captured en passant, too
@@ -417,7 +338,7 @@ class ChessGame:
         return self.field_in_check(params, field, color2check, color2move, True)
 
     def field_in_check(self, params, field, color2check, color2move, virtual):
-        """checks if after a given valid move some field is in check:
+        """checks if after a given valid move some boardDict is in check:
             False: move valid   True: move not valid because of check"""
         ### check variable: [ pawns/kings, rooks/queens, bishops/queens, knights ]
         check = np.array([ False, False, False, False ])
@@ -429,7 +350,7 @@ class ChessGame:
             color_opponent = 'w' if color2move == 'b' else 'b'
             params = self.make_atomic_move(params, virtual)
         board = params[4].copy()
-        ### check one field around myfield (pawn or king)
+        ### check one boardDict around myfield (pawn or king)
         idx = []
         fields = [[myfield[0] + x, myfield[1] + y] for x in [-1, 0, +1] for y in [-1, 0, +1]]
         del_idx = []
@@ -459,7 +380,7 @@ class ChessGame:
                         if color_opponent+'King' in piece:
                             check[0] = True
                 else:
-                    ## there is an empty field to check in case of castling (get "myfield color" from player to move
+                    ## there is an empty boardDict to check in case of castling (get "myfield color" from player to move
                     if color2move == 'w':
                         if (field[0] < myfield[0]) and field[1] != myfield[1] and color_opponent+'Pawn' in piece:
                             ### black pawn
@@ -658,15 +579,15 @@ class ChessGame:
         ### Rules for pawns
         elif 'Pawn' in self.piece_type:
             if abs(newpos[1]-oldpos[1])>1:
-                ### not more than 1 field to the side possible
+                ### not more than 1 boardDict to the side possible
                 return False
             if abs(newpos[1]-oldpos[1]) == 1:
                 if piece_on_newpos == None:
-                    ### empty field on the side
+                    ### empty boardDict on the side
                     if self.piece_type[0] == 'w':
                         if newpos[0] == 2 and piece_on_newpos == None and \
                                 'bPawn' in self.board[3][newpos[1]] and self.en_passant_possible[0] == True:
-                            ### en passante capture by white: correct row with empty target field and
+                            ### en passante capture by white: correct row with empty target boardDict and
                             ### piece to capture has to be a pawn, which moved in the last move
                             self.capture = True
                             self.en_passant_possible = [False, True]
@@ -676,7 +597,7 @@ class ChessGame:
                     elif self.piece_type[0] == 'b':
                         if newpos[0] == 5 and piece_on_newpos == None and \
                                 'wPawn' in self.board[4][newpos[1]] and self.en_passant_possible[0] == True:
-                            ### en passante capture by black: correct row with empty target field and
+                            ### en passante capture by black: correct row with empty target boardDict and
                             ### piece to capture has to be a pawn, which moved in the last move
                             self.en_passant_possible = [False, True]
                             self.capture = True
@@ -907,7 +828,7 @@ class ChessGame:
         else:
             self.moves[self.num_moves][1] = str
             self.num_moves += 1
-            with open(self.filename, 'a') as dfile:
+            with open(self.filename_movehistory, 'a') as dfile:
                 dfile.write("{0}:{1}___{2}\n".format(self.num_moves, self.moves[-1][0], self.moves[-1][1]))
 
 
@@ -921,23 +842,19 @@ class ChessGame:
         """
         if 'King' not in self.white:
             print('Black wins')
-            # self.field_info['info'] = 'Black wins!'
             return "win:b"
         elif 'King' not in self.black:
             print('White wins')
-            # self.field_info['info'] = 'White wins!'
             return "win:w"
         # elif self.check_remis == True:
         #     print("Remis!")
         #     return("draw")
         else:
-            # self.field_info['info'] = ''
             return 0
     # def resign(self, player):
         ## not ready!!!
         #TODO
         """Some human player resigns"""
-        # self.field_info['info'] = 'White resigns. Black wins.' \
         #     if player == 'w' else 'Black resigns. White wins!'
 
 

@@ -34,7 +34,7 @@ body {
   vertical-align: middle;
   flex: 0 0 34%;
   /*margin: auto;*/
-  height: 320px;
+  height: 80px;
   width: 320px;
 }
 
@@ -47,7 +47,7 @@ body {
   vertical-align: middle;
   flex: 0 0 34%;
   /*margin: auto;*/
-  height: 300px;
+  height: 350px;
   width: 320px;
 }
 
@@ -112,8 +112,8 @@ background-color: #bf8040;
 position: relative;*/
 align-items: center;
 justify-content: center;
-flex: 0 0 80%;
-height: 17%;
+flex: 0 0 100%;
+height: 14.3%;
 }
 
 #info {
